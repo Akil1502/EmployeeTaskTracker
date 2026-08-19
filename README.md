@@ -11,6 +11,27 @@ can update their status.
 
 ---
 
+## Screenshots
+
+**Sign in** — validation messages, and demo account shortcuts that appear only in the Development
+environment so credentials never reach a deployed build.
+
+![Sign-in page](docs/screenshots/login.png)
+
+**Dashboard** — the summary cards required by the specification, each one a link into the task list
+filtered to match. Figures are organisation-wide for an Admin and scoped to their own work for an
+Employee.
+
+![Dashboard](docs/screenshots/dashboard.png)
+
+**Task Management** — create, edit, delete and assign, with search by task title or employee name and
+filters for status and priority. An Employee sees the same page without the create, edit and delete
+controls, and can change status only.
+
+![Task Management](docs/screenshots/task-management.png)
+
+---
+
 ## Getting started
 
 From a clean machine to a running application. Allow about ten minutes, most of it installing
