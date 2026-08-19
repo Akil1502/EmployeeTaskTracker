@@ -22,10 +22,17 @@
                         <span class="app-nav-toggle-bar"></span>
                     </button>
 
+                    <div class="d-none d-lg-flex align-items-center gap-2">
+                        <BrandMark Size="20" />
+                        <span class="eyebrow">Employee Task Tracker</span>
+                    </div>
+
                     <div class="ms-auto d-flex align-items-center gap-3">
                         <div class="text-end d-none d-sm-block">
-                            <div class="fw-semibold lh-1">@context.User.Identity?.Name</div>
-                            <small class="text-muted">@RoleLabel(context)</small>
+                            <div class="fw-semibold lh-1" style="font-size:.9rem;">
+                                @context.User.Identity?.Name
+                            </div>
+                            <div class="eyebrow mt-1">@RoleLabel(context)</div>
                         </div>
                         <div class="app-avatar" title="@context.User.Identity?.Name">
                             @Initials(context.User.Identity?.Name)

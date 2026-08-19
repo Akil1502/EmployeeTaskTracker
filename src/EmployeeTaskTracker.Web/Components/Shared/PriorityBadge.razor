@@ -1,14 +1,14 @@
-@* Colour-coded pill for a task priority. *@
+@* Flat tinted pill for a task priority. *@
 
-<span class="badge rounded-pill @CssClass">@Priority</span>
+<span class="pill @CssClass">@Priority</span>
 
 @code {
     [Parameter, EditorRequired] public string Priority { get; set; } = TaskPriorities.Medium;
 
     private string CssClass => Priority switch
     {
-        TaskPriorities.High => "text-bg-danger",
-        TaskPriorities.Medium => "text-bg-warning",
-        _ => "text-bg-light border"
+        TaskPriorities.High => "pill-high",
+        TaskPriorities.Medium => "pill-medium",
+        _ => "pill-low"
     };
 }

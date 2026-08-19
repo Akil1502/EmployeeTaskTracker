@@ -1,32 +1,462 @@
 /* ==========================================================================
-   Employee Task Tracker - application styles
-   Layered on top of Bootstrap 5. Layout is responsive: the sidebar becomes a
-   slide-over drawer below the lg breakpoint.
+   Employee Task Tracker — application styles
+
+   Design notes
+   ------------
+   Palette is deliberately not the Bootstrap default. It pairs a deep ink
+   neutral with a pine-green accent and a clay secondary, on warm off-white
+   paper rather than pure white. Warm neutrals stop the greys reading as
+   cold blue-grey, which is what makes a default admin template look generic.
+
+   Depth comes from hairline borders and one very soft shadow rather than the
+   heavy drop shadows Bootstrap defaults to. Hierarchy is carried by type —
+   tight negative tracking on headings, wide positive tracking on small-caps
+   labels — instead of by colour alone.
    ========================================================================== */
 
 :root {
-    --app-sidebar-width: 16rem;
-    --app-topbar-height: 4rem;
-    --app-bg: #f4f6fa;
-    --app-surface: #ffffff;
-    --app-border: #e4e8f0;
-    --app-ink: #1f2733;
-    --app-muted: #6b7684;
-    --app-accent: #2f5fe0;
-    --app-accent-dark: #1e46b3;
+    /* Ink — the dark neutral ramp */
+    --ink-900: #12151a;
+    --ink-800: #1a1f26;
+    --ink-700: #262c35;
+    --ink-600: #3a424e;
+    --ink-500: #5c6675;
+    --ink-400: #8b94a1;
+    --ink-300: #b6bdc7;
+
+    /* Paper — warm neutrals */
+    --paper: #fbfaf8;
+    --surface: #ffffff;
+    --surface-sunken: #f4f2ee;
+    --line: #e5e1da;
+    --line-strong: #d3cec5;
+
+    /* Accent — pine */
+    --accent: #2f6f5e;
+    --accent-hover: #275c4e;
+    --accent-soft: #e6f0ec;
+    --accent-ink: #1d4a3e;
+
+    /* Secondary — clay */
+    --clay: #b8663c;
+    --clay-soft: #f8ebe3;
+
+    /* Status */
+    --danger: #a83f2b;
+    --danger-soft: #fae9e5;
+    --warn: #a97b28;
+    --warn-soft: #fbf1dd;
+    --ok: #2f6f5e;
+    --ok-soft: #e6f0ec;
+
+    --radius: 10px;
+    --radius-lg: 14px;
+    --shadow: 0 1px 2px rgba(18, 21, 26, .04), 0 8px 24px -12px rgba(18, 21, 26, .12);
+
+    --sidebar-width: 15.5rem;
+    --topbar-height: 4rem;
+
+    --font: "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system,
+            "Helvetica Neue", Arial, sans-serif;
 }
+
+/* --------------------------------------------------------------------------
+   Base
+   -------------------------------------------------------------------------- */
 
 html, body {
     height: 100%;
 }
 
 body {
-    background-color: var(--app-bg);
-    color: var(--app-ink);
-    font-family: "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+    background: var(--paper);
+    color: var(--ink-900);
+    font-family: var(--font);
+    font-size: 15px;
+    -webkit-font-smoothing: antialiased;
 }
 
-/* ---------- Application shell ---------- */
+h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
+    letter-spacing: -.021em;
+    font-weight: 600;
+    color: var(--ink-900);
+}
+
+a {
+    color: var(--accent);
+    text-underline-offset: 2px;
+}
+
+a:hover {
+    color: var(--accent-hover);
+}
+
+/* Small-caps label, used above form fields and on section headers. */
+.eyebrow {
+    text-transform: uppercase;
+    letter-spacing: .1em;
+    font-size: .69rem;
+    font-weight: 600;
+    color: var(--ink-400);
+}
+
+/* --------------------------------------------------------------------------
+   Brand mark
+   -------------------------------------------------------------------------- */
+
+.brand-mark-plate {
+    fill: var(--accent);
+    stroke: none;
+}
+
+.brand-mark-check,
+.brand-mark-tick,
+.brand-mark-rule {
+    stroke: #ffffff;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.brand-mark-rule {
+    opacity: .5;
+}
+
+.brand-mark-rule-done {
+    opacity: .28;
+}
+
+.brand-mark-tick {
+    opacity: .85;
+}
+
+.brand-mark-inverted .brand-mark-plate {
+    fill: transparent;
+    stroke: rgba(255, 255, 255, .28);
+    stroke-width: 1;
+}
+
+/* --------------------------------------------------------------------------
+   Buttons — flatter and squarer than the Bootstrap default
+   -------------------------------------------------------------------------- */
+
+.btn {
+    --bs-btn-border-radius: var(--radius);
+    font-weight: 550;
+    letter-spacing: -.005em;
+    padding: .5rem 1rem;
+    transition: background-color .14s ease, border-color .14s ease, color .14s ease;
+}
+
+.btn-lg {
+    padding: .7rem 1.15rem;
+    font-size: 1rem;
+}
+
+.btn-primary {
+    --bs-btn-bg: var(--accent);
+    --bs-btn-border-color: var(--accent);
+    --bs-btn-hover-bg: var(--accent-hover);
+    --bs-btn-hover-border-color: var(--accent-hover);
+    --bs-btn-active-bg: var(--accent-ink);
+    --bs-btn-active-border-color: var(--accent-ink);
+    --bs-btn-disabled-bg: var(--accent);
+    --bs-btn-disabled-border-color: var(--accent);
+}
+
+.btn-outline-secondary {
+    --bs-btn-color: var(--ink-700);
+    --bs-btn-border-color: var(--line-strong);
+    --bs-btn-hover-bg: var(--surface-sunken);
+    --bs-btn-hover-border-color: var(--ink-400);
+    --bs-btn-hover-color: var(--ink-900);
+    --bs-btn-active-bg: var(--surface-sunken);
+    --bs-btn-active-color: var(--ink-900);
+    --bs-btn-active-border-color: var(--ink-400);
+}
+
+.btn-outline-danger {
+    --bs-btn-color: var(--danger);
+    --bs-btn-border-color: var(--line-strong);
+    --bs-btn-hover-bg: var(--danger);
+    --bs-btn-hover-border-color: var(--danger);
+    --bs-btn-active-bg: var(--danger);
+    --bs-btn-active-border-color: var(--danger);
+}
+
+.btn-danger {
+    --bs-btn-bg: var(--danger);
+    --bs-btn-border-color: var(--danger);
+    --bs-btn-hover-bg: #8f3423;
+    --bs-btn-hover-border-color: #8f3423;
+    --bs-btn-disabled-bg: var(--danger);
+    --bs-btn-disabled-border-color: var(--danger);
+}
+
+.btn-link {
+    color: var(--accent);
+    font-weight: 550;
+}
+
+/* --------------------------------------------------------------------------
+   Form controls
+   -------------------------------------------------------------------------- */
+
+.form-control,
+.form-select {
+    border-color: var(--line-strong);
+    border-radius: var(--radius);
+    color: var(--ink-900);
+    background-color: var(--surface);
+    padding: .5rem .75rem;
+    transition: border-color .14s ease, box-shadow .14s ease;
+}
+
+.form-control::placeholder {
+    color: var(--ink-300);
+}
+
+.form-control:focus,
+.form-select:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.form-control-lg,
+.form-select-lg {
+    padding: .68rem .85rem;
+    font-size: 1rem;
+}
+
+.form-label {
+    font-weight: 550;
+    font-size: .87rem;
+    color: var(--ink-700);
+    margin-bottom: .35rem;
+}
+
+.form-control:disabled,
+.form-select:disabled {
+    background-color: var(--surface-sunken);
+    color: var(--ink-400);
+}
+
+/* --------------------------------------------------------------------------
+   Login — split screen. The dark panel carries the brand, the light panel
+   carries the form. Below lg the panel collapses to a slim header.
+   -------------------------------------------------------------------------- */
+
+.login {
+    min-height: 100vh;
+    display: grid;
+    grid-template-columns: 1fr;
+}
+
+.login-aside {
+    position: relative;
+    background: var(--ink-900);
+    color: #fff;
+    padding: 2rem 1.75rem;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Faint diagonal rules, so the panel is not a flat block of colour. */
+.login-aside::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image: repeating-linear-gradient(
+        -45deg,
+        rgba(255, 255, 255, .022) 0 1px,
+        transparent 1px 11px
+    );
+    pointer-events: none;
+}
+
+.login-aside > * {
+    position: relative;
+    z-index: 1;
+}
+
+.login-brand {
+    display: flex;
+    align-items: center;
+    gap: .7rem;
+}
+
+.login-wordmark {
+    font-size: .78rem;
+    font-weight: 600;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, .82);
+}
+
+.login-aside-body {
+    margin-top: auto;
+    margin-bottom: auto;
+    padding: 2.5rem 0;
+    max-width: 30rem;
+}
+
+.login-headline {
+    font-size: clamp(1.75rem, 3.4vw, 2.9rem);
+    line-height: 1.1;
+    letter-spacing: -.03em;
+    font-weight: 600;
+    color: #fff;
+    margin-bottom: 1rem;
+}
+
+.login-headline em {
+    font-style: normal;
+    color: #7fb8a5;
+}
+
+.login-sub {
+    color: rgba(255, 255, 255, .62);
+    font-size: 1.02rem;
+    line-height: 1.6;
+    margin-bottom: 2.25rem;
+}
+
+.login-points {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    border-top: 1px solid rgba(255, 255, 255, .1);
+}
+
+.login-points li {
+    display: flex;
+    gap: .85rem;
+    align-items: baseline;
+    padding: .8rem 0;
+    border-bottom: 1px solid rgba(255, 255, 255, .1);
+    color: rgba(255, 255, 255, .78);
+    font-size: .93rem;
+}
+
+.login-points .num {
+    font-variant-numeric: tabular-nums;
+    font-size: .72rem;
+    letter-spacing: .1em;
+    color: #7fb8a5;
+    min-width: 1.6rem;
+}
+
+.login-foot {
+    font-size: .78rem;
+    color: rgba(255, 255, 255, .35);
+}
+
+.login-main {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2.5rem 1.5rem;
+    background: var(--paper);
+}
+
+.login-form {
+    width: 100%;
+    max-width: 23rem;
+}
+
+.login-title {
+    font-size: 1.6rem;
+    margin-bottom: .35rem;
+}
+
+.login-hint {
+    color: var(--ink-500);
+    margin-bottom: 2rem;
+}
+
+.login-demo {
+    margin-top: 2rem;
+    padding-top: 1.35rem;
+    border-top: 1px solid var(--line);
+}
+
+.demo-chip {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: .75rem;
+    width: 100%;
+    text-align: left;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: .55rem .75rem;
+    font-size: .85rem;
+    color: var(--ink-700);
+    transition: border-color .14s ease, background-color .14s ease;
+}
+
+.demo-chip:hover:not(:disabled) {
+    border-color: var(--accent);
+    background: var(--accent-soft);
+    color: var(--accent-ink);
+}
+
+.demo-chip .role {
+    font-size: .68rem;
+    text-transform: uppercase;
+    letter-spacing: .09em;
+    color: var(--ink-400);
+    white-space: nowrap;
+}
+
+/* On a phone the brand panel collapses to a compact header, so the form is
+   reachable without scrolling past a screen of copy. The numbered points and
+   the footer are for the wide layout only. */
+@media (max-width: 991.98px) {
+    .login-aside {
+        padding: 1.5rem 1.35rem 1.75rem;
+    }
+
+    .login-aside-body {
+        padding: 1.5rem 0 0;
+        margin: 0;
+    }
+
+    .login-headline {
+        font-size: 1.5rem;
+        margin-bottom: .6rem;
+    }
+
+    .login-sub {
+        font-size: .93rem;
+        margin-bottom: 0;
+    }
+
+    .login-points,
+    .login-foot {
+        display: none;
+    }
+}
+
+@media (min-width: 992px) {
+    .login {
+        grid-template-columns: 1.15fr 1fr;
+    }
+
+    .login-aside {
+        padding: 2.75rem 3.5rem;
+    }
+
+    .login-main {
+        padding: 3rem;
+    }
+}
+
+/* --------------------------------------------------------------------------
+   Application shell
+   -------------------------------------------------------------------------- */
 
 .app-shell {
     min-height: 100vh;
@@ -39,36 +469,39 @@ body {
 }
 
 .app-content {
-    padding: 1.5rem;
+    padding: 1.75rem 1.5rem 3rem;
     flex: 1 1 auto;
+    max-width: 96rem;
+    width: 100%;
 }
 
 .app-topbar {
-    height: var(--app-topbar-height);
-    background: var(--app-surface);
-    border-bottom: 1px solid var(--app-border);
+    height: var(--topbar-height);
+    background: rgba(251, 250, 248, .88);
+    backdrop-filter: saturate(180%) blur(8px);
+    border-bottom: 1px solid var(--line);
     display: flex;
     align-items: center;
-    padding: 0 1.25rem;
+    padding: 0 1.5rem;
     position: sticky;
     top: 0;
     z-index: 1020;
 }
 
-/* ---------- Sidebar ---------- */
+/* Sidebar */
 
 .app-sidebar {
-    width: var(--app-sidebar-width);
-    background: #16203a;
-    color: #cfd7e6;
+    width: var(--sidebar-width);
+    background: var(--ink-900);
+    color: var(--ink-300);
     position: fixed;
     inset: 0 auto 0 0;
     z-index: 1045;
     display: flex;
     flex-direction: column;
-    padding: 1.25rem 0;
+    padding: 1.5rem 0 1.25rem;
     transform: translateX(-100%);
-    transition: transform .2s ease-in-out;
+    transition: transform .22s cubic-bezier(.4, 0, .2, 1);
 }
 
 .app-sidebar.expanded {
@@ -79,7 +512,7 @@ body {
     display: none;
     position: fixed;
     inset: 0;
-    background: rgba(15, 20, 35, .5);
+    background: rgba(18, 21, 26, .45);
     z-index: 1040;
 }
 
@@ -90,109 +523,125 @@ body {
 .app-brand {
     display: flex;
     align-items: center;
-    gap: .75rem;
-    padding: 0 1.25rem 1.25rem;
-    border-bottom: 1px solid rgba(255, 255, 255, .08);
+    gap: .7rem;
+    padding: 0 1.35rem 1.35rem;
     margin-bottom: 1rem;
-}
-
-.app-brand-mark {
-    width: 2.5rem;
-    height: 2.5rem;
-    border-radius: .65rem;
-    background: linear-gradient(135deg, var(--app-accent), #6a8bff);
-    color: #fff;
-    display: grid;
-    place-items: center;
-    font-weight: 700;
-    letter-spacing: .5px;
-    flex: 0 0 auto;
+    border-bottom: 1px solid rgba(255, 255, 255, .08);
 }
 
 .app-brand-title {
     color: #fff;
     font-weight: 600;
-    line-height: 1.1;
+    font-size: .93rem;
+    letter-spacing: -.01em;
+    line-height: 1.15;
 }
 
 .app-brand-sub {
-    font-size: .7rem;
-    color: #8894ad;
-    line-height: 1.2;
+    font-size: .68rem;
+    letter-spacing: .07em;
+    text-transform: uppercase;
+    color: var(--ink-500);
+    line-height: 1.3;
+    margin-top: .1rem;
 }
 
 .app-nav {
     list-style: none;
     margin: 0;
-    padding: 0 .75rem;
+    padding: 0 .85rem;
     flex: 1 1 auto;
 }
 
+.app-nav-section {
+    padding: .5rem .5rem .4rem;
+    font-size: .66rem;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--ink-600);
+    font-weight: 600;
+}
+
 .app-nav-link {
+    position: relative;
     display: flex;
     align-items: center;
-    gap: .75rem;
-    padding: .6rem .85rem;
-    margin-bottom: .25rem;
-    border-radius: .5rem;
-    color: #cfd7e6;
+    gap: .7rem;
+    padding: .55rem .7rem;
+    margin-bottom: .15rem;
+    border-radius: 8px;
+    color: var(--ink-300);
     text-decoration: none;
-    font-size: .95rem;
-    transition: background-color .15s, color .15s;
+    font-size: .91rem;
+    font-weight: 500;
+    transition: background-color .14s ease, color .14s ease;
 }
 
 .app-nav-link:hover {
-    background: rgba(255, 255, 255, .07);
+    background: rgba(255, 255, 255, .055);
     color: #fff;
 }
 
 .app-nav-link.active {
-    background: var(--app-accent);
+    background: rgba(255, 255, 255, .085);
     color: #fff;
     font-weight: 600;
 }
 
+/* Accent rail marking the current page. */
+.app-nav-link.active::before {
+    content: "";
+    position: absolute;
+    left: -.85rem;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 3px;
+    height: 1.15rem;
+    border-radius: 0 3px 3px 0;
+    background: #7fb8a5;
+}
+
 .app-nav-icon {
-    font-size: .8rem;
-    opacity: .85;
-    width: 1rem;
-    text-align: center;
+    width: 1.1rem;
+    display: inline-flex;
+    justify-content: center;
+    opacity: .75;
 }
 
 .app-sidebar-footer {
-    padding: 1rem 1.5rem 0;
+    padding: 1rem 1.35rem 0;
     border-top: 1px solid rgba(255, 255, 255, .08);
 }
 
-/* Hamburger, drawn in CSS so no icon font is needed. */
 .app-nav-toggle {
-    border: 1px solid var(--app-border);
-    border-radius: .5rem;
-    padding: .5rem .6rem;
+    border: 1px solid var(--line-strong);
+    border-radius: 8px;
+    padding: .45rem .55rem;
     background: transparent;
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 3px;
 }
 
 .app-nav-toggle-bar {
     display: block;
-    width: 18px;
-    height: 2px;
-    background: var(--app-ink);
+    width: 16px;
+    height: 1.5px;
+    background: var(--ink-700);
     border-radius: 2px;
 }
 
 .app-avatar {
-    width: 2.35rem;
-    height: 2.35rem;
-    border-radius: 50%;
-    background: var(--app-accent);
+    width: 2.2rem;
+    height: 2.2rem;
+    border-radius: 8px;
+    background: var(--accent);
     color: #fff;
     display: grid;
     place-items: center;
     font-weight: 600;
-    font-size: .85rem;
+    font-size: .78rem;
+    letter-spacing: .02em;
     flex: 0 0 auto;
 }
 
@@ -202,15 +651,25 @@ body {
     }
 
     .app-main {
-        margin-left: var(--app-sidebar-width);
+        margin-left: var(--sidebar-width);
     }
 
     .app-backdrop {
         display: none !important;
     }
+
+    .app-content {
+        padding: 2rem 2.25rem 3.5rem;
+    }
+
+    .app-topbar {
+        padding: 0 2.25rem;
+    }
 }
 
-/* ---------- Page furniture ---------- */
+/* --------------------------------------------------------------------------
+   Page furniture
+   -------------------------------------------------------------------------- */
 
 .page-header {
     display: flex;
@@ -221,63 +680,88 @@ body {
     margin-bottom: 1.5rem;
 }
 
+.page-header h1 {
+    font-size: 1.55rem;
+    margin-bottom: .2rem;
+}
+
+.page-header p {
+    color: var(--ink-500);
+    font-size: .93rem;
+}
+
 .app-card {
-    border: 1px solid var(--app-border);
-    border-radius: .75rem;
-    box-shadow: 0 1px 2px rgba(16, 24, 40, .04);
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow);
 }
 
 .app-card > .card-header {
-    background: var(--app-surface);
-    border-bottom: 1px solid var(--app-border);
-    border-radius: .75rem .75rem 0 0;
-    padding: .85rem 1.1rem;
+    background: transparent;
+    border-bottom: 1px solid var(--line);
+    padding: .9rem 1.15rem;
+    font-size: .93rem;
 }
 
 .empty-glyph {
-    font-size: 2rem;
-    opacity: .35;
+    font-size: 1.75rem;
+    opacity: .3;
     margin-bottom: .5rem;
 }
 
-/* ---------- Dashboard stat cards ---------- */
+/* Stat cards — the number leads, the label supports it. */
 
 .stat-card {
-    border-left: 4px solid var(--app-accent);
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow);
+    padding: 1.15rem 1.2rem;
+    height: 100%;
+    position: relative;
 }
 
-.stat-card .stat-value {
-    font-size: 1.85rem;
-    font-weight: 700;
-    line-height: 1.1;
+.stat-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: .85rem;
 }
 
-.stat-card .stat-label {
-    color: var(--app-muted);
-    font-size: .85rem;
+.stat-label {
+    text-transform: uppercase;
+    letter-spacing: .09em;
+    font-size: .68rem;
+    font-weight: 600;
+    color: var(--ink-400);
 }
 
-.stat-icon {
-    width: 2.75rem;
-    height: 2.75rem;
-    border-radius: .65rem;
-    display: grid;
-    place-items: center;
-    font-size: 1rem;
+.stat-dot {
+    width: .5rem;
+    height: .5rem;
+    border-radius: 50%;
     flex: 0 0 auto;
 }
 
-.stat-primary { border-left-color: #2f5fe0; }
-.stat-primary .stat-icon { background: #e8eeff; color: #2f5fe0; }
+.stat-value {
+    font-size: 2.1rem;
+    font-weight: 600;
+    line-height: 1;
+    letter-spacing: -.035em;
+    font-variant-numeric: tabular-nums;
+}
 
-.stat-secondary { border-left-color: #6b7684; }
-.stat-secondary .stat-icon { background: #eef0f4; color: #6b7684; }
+.stat-note {
+    font-size: .78rem;
+    color: var(--ink-400);
+    margin-top: .4rem;
+}
 
-.stat-success { border-left-color: #1a9d63; }
-.stat-success .stat-icon { background: #e4f6ed; color: #1a9d63; }
-
-.stat-danger { border-left-color: #d9455f; }
-.stat-danger .stat-icon { background: #fdeaee; color: #d9455f; }
+.stat-total .stat-dot { background: var(--ink-600); }
+.stat-pending .stat-dot { background: var(--warn); }
+.stat-done .stat-dot { background: var(--ok); }
+.stat-high .stat-dot { background: var(--danger); }
 
 .breakdown {
     margin: 0;
@@ -286,42 +770,150 @@ body {
 .breakdown > div {
     display: flex;
     justify-content: space-between;
-    padding: .5rem 0;
-    border-bottom: 1px dashed var(--app-border);
+    align-items: baseline;
+    padding: .6rem 0;
+    border-bottom: 1px solid var(--line);
 }
 
 .breakdown > div:last-child {
     border-bottom: 0;
+    padding-bottom: 0;
 }
 
 .breakdown dt {
     font-weight: 500;
-    color: var(--app-muted);
+    color: var(--ink-500);
+    font-size: .9rem;
 }
 
 .breakdown dd {
     margin: 0;
     font-weight: 600;
+    font-variant-numeric: tabular-nums;
 }
 
-/* ---------- Tables ---------- */
+.progress {
+    height: .4rem;
+    background: var(--surface-sunken);
+    border-radius: 99px;
+}
+
+.progress-bar {
+    background: var(--accent) !important;
+    border-radius: 99px;
+}
+
+/* --------------------------------------------------------------------------
+   Tables
+   -------------------------------------------------------------------------- */
+
+.table {
+    --bs-table-hover-bg: var(--surface-sunken);
+    margin-bottom: 0;
+    color: var(--ink-900);
+}
 
 .table > thead th {
-    font-size: .78rem;
+    font-size: .68rem;
     text-transform: uppercase;
-    letter-spacing: .04em;
-    color: var(--app-muted);
+    letter-spacing: .1em;
+    color: var(--ink-400);
     font-weight: 600;
-    border-bottom-width: 1px;
+    border-bottom: 1px solid var(--line);
     white-space: nowrap;
+    padding: .7rem .9rem;
+    background: transparent;
 }
 
 .table > tbody > tr > td {
-    padding-top: .75rem;
-    padding-bottom: .75rem;
+    padding: .85rem .9rem;
+    border-bottom-color: var(--line);
+    vertical-align: middle;
 }
 
-/* ---------- Modals ---------- */
+.table > tbody > tr:last-child > td {
+    border-bottom: 0;
+}
+
+.cell-title {
+    font-weight: 550;
+    letter-spacing: -.008em;
+}
+
+.cell-sub {
+    font-size: .82rem;
+    color: var(--ink-400);
+    margin-top: .1rem;
+}
+
+.cell-muted {
+    color: var(--ink-400);
+}
+
+/* --------------------------------------------------------------------------
+   Badges — flat tinted pills, no Bootstrap gradients
+   -------------------------------------------------------------------------- */
+
+.pill {
+    display: inline-flex;
+    align-items: center;
+    gap: .35rem;
+    padding: .2rem .55rem;
+    border-radius: 99px;
+    font-size: .74rem;
+    font-weight: 600;
+    letter-spacing: .01em;
+    white-space: nowrap;
+}
+
+.pill::before {
+    content: "";
+    width: .4rem;
+    height: .4rem;
+    border-radius: 50%;
+    background: currentColor;
+    flex: 0 0 auto;
+}
+
+.pill-neutral { background: var(--surface-sunken); color: var(--ink-500); }
+.pill-progress { background: var(--warn-soft); color: var(--warn); }
+.pill-done { background: var(--ok-soft); color: var(--ok); }
+.pill-high { background: var(--danger-soft); color: var(--danger); }
+.pill-medium { background: var(--clay-soft); color: var(--clay); }
+.pill-low { background: var(--surface-sunken); color: var(--ink-500); }
+
+/* --------------------------------------------------------------------------
+   Alerts
+   -------------------------------------------------------------------------- */
+
+.alert {
+    border-radius: var(--radius);
+    border-width: 1px;
+    font-size: .91rem;
+    padding: .75rem 1rem;
+}
+
+.alert-danger {
+    background: var(--danger-soft);
+    border-color: #eccfc8;
+    color: #7d2f20;
+}
+
+.alert-success {
+    background: var(--ok-soft);
+    border-color: #c7e0d7;
+    color: var(--accent-ink);
+}
+
+.alert-warning {
+    background: var(--warn-soft);
+    border-color: #ecdcb8;
+    color: #7d5a1c;
+}
+
+/* --------------------------------------------------------------------------
+   Modals
+   -------------------------------------------------------------------------- */
 
 .app-modal {
     z-index: 1055;
@@ -329,64 +921,52 @@ body {
 
 .app-modal .modal-content {
     border: 0;
-    border-radius: .75rem;
+    border-radius: var(--radius-lg);
+    box-shadow: 0 24px 60px -20px rgba(18, 21, 26, .35);
 }
 
-/* ---------- Login ---------- */
-
-.login-page {
-    min-height: 100vh;
-    display: grid;
-    place-items: center;
-    padding: 1.5rem;
-    background: linear-gradient(140deg, #16203a 0%, #23407e 55%, #2f5fe0 100%);
+.app-modal .modal-header,
+.app-modal .modal-footer {
+    border-color: var(--line);
+    padding: 1rem 1.25rem;
 }
 
-.login-card {
-    width: 100%;
-    max-width: 27rem;
-    background: var(--app-surface);
-    border-radius: 1rem;
-    padding: 2rem;
+.app-modal .modal-body {
+    padding: 1.25rem;
 }
 
-.login-brand {
-    text-align: center;
-    margin-bottom: 1.75rem;
+.app-modal .modal-title {
+    font-size: 1.08rem;
 }
 
-.login-mark {
-    width: 3.25rem;
-    height: 3.25rem;
-    margin: 0 auto .85rem;
-    font-size: 1.1rem;
+.modal-backdrop.show {
+    background: var(--ink-900);
+    opacity: .45;
 }
 
-.login-demo {
-    margin-top: 1.5rem;
-    padding-top: 1.25rem;
-    border-top: 1px dashed var(--app-border);
-    text-align: center;
-}
-
-/* ---------- Blazor error UI (from the template) ---------- */
+/* --------------------------------------------------------------------------
+   Blazor error UI
+   -------------------------------------------------------------------------- */
 
 #blazor-error-ui {
     color-scheme: light only;
-    background: lightyellow;
+    background: #fbf1dd;
+    border-top: 1px solid #ecdcb8;
+    color: #7d5a1c;
     bottom: 0;
-    box-shadow: 0 -1px 2px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 -1px 2px rgba(18, 21, 26, .1);
     display: none;
     left: 0;
-    padding: 0.6rem 1.25rem 0.7rem 1.25rem;
+    padding: .7rem 1.25rem;
     position: fixed;
     width: 100%;
     z-index: 1060;
+    font-size: .9rem;
 }
 
 #blazor-error-ui .dismiss {
     cursor: pointer;
     position: absolute;
-    right: 0.75rem;
-    top: 0.5rem;
+    right: .75rem;
+    top: .5rem;
 }

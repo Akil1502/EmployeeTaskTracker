@@ -40,18 +40,18 @@
 }
 
 @* ---------------- Search & filter ---------------- *@
-<div class="card app-card mb-3">
-    <div class="card-body">
+<div class="app-card mb-3">
+    <div class="p-3">
         <div class="row g-2 align-items-end">
             <div class="col-12 col-lg-5">
-                <label class="form-label small text-muted" for="search">Search by title</label>
+                <label class="eyebrow d-block mb-1" for="search">Search by title</label>
                 <input id="search" class="form-control" placeholder="Type a task title..."
                        value="@_filter.Search"
                        @oninput="OnSearchInput" />
             </div>
 
             <div class="col-6 col-lg-3">
-                <label class="form-label small text-muted" for="statusFilter">Status</label>
+                <label class="eyebrow d-block mb-1" for="statusFilter">Status</label>
                 <select id="statusFilter" class="form-select"
                         value="@_filter.Status" @onchange="OnStatusChanged">
                     <option value="">All statuses</option>
@@ -63,7 +63,7 @@
             </div>
 
             <div class="col-6 col-lg-3">
-                <label class="form-label small text-muted" for="priorityFilter">Priority</label>
+                <label class="eyebrow d-block mb-1" for="priorityFilter">Priority</label>
                 <select id="priorityFilter" class="form-select"
                         value="@_filter.Priority" @onchange="OnPriorityChanged">
                     <option value="">All priorities</option>
@@ -85,18 +85,18 @@
 </div>
 
 @* ---------------- Results ---------------- *@
-<div class="card app-card">
+<div class="app-card">
     <div class="card-header d-flex align-items-center justify-content-between">
         <span class="fw-semibold">
             @_tasks.Count @(_tasks.Count == 1 ? "task" : "tasks")
             @if (_filter.HasAnyFilter)
             {
-                <span class="text-muted fw-normal">(filtered)</span>
+                <span class="cell-muted fw-normal">(filtered)</span>
             }
         </span>
         @if (_isLoading)
         {
-            <span class="spinner-border spinner-border-sm text-primary" role="status">
+            <span class="spinner-border spinner-border-sm text-secondary" role="status">
                 <span class="visually-hidden">Loading...</span>
             </span>
         }
@@ -104,8 +104,8 @@
 
     @if (!_isLoading && _tasks.Count == 0)
     {
-        <div class="card-body text-center text-muted py-5">
-            <div class="empty-glyph">&#9776;</div>
+        <div class="text-center text-muted py-5">
+            <div class="empty-glyph">&#9744;</div>
             <p class="mb-1">No tasks match your search.</p>
             @if (_filter.HasAnyFilter)
             {
@@ -135,10 +135,10 @@
                     {
                         <tr @key="task.TaskId">
                             <td>
-                                <div class="fw-semibold">@task.Title</div>
+                                <div class="cell-title">@task.Title</div>
                                 @if (!string.IsNullOrWhiteSpace(task.Description))
                                 {
-                                    <div class="small text-muted text-truncate" style="max-width: 26rem;">
+                                    <div class="cell-sub text-truncate" style="max-width: 26rem;">
                                         @task.Description
                                     </div>
                                 }
@@ -149,7 +149,7 @@
                                 <td class="d-none d-lg-table-cell">
                                     @if (task.AssignedToName is null)
                                     {
-                                        <span class="text-muted fst-italic">Unassigned</span>
+                                        <span class="cell-muted">Unassigned</span>
                                     }
                                     else
                                     {
@@ -177,7 +177,7 @@
                             <td class="d-none d-md-table-cell">
                                 @if (task.DueDate is null)
                                 {
-                                    <span class="text-muted">&mdash;</span>
+                                    <span class="cell-muted">&mdash;</span>
                                 }
                                 else
                                 {
@@ -186,7 +186,7 @@
                                     </span>
                                     @if (task.IsOverdue)
                                     {
-                                        <div class="small text-danger">Overdue</div>
+                                        <div class="cell-sub text-danger">Overdue</div>
                                     }
                                 }
                             </td>
@@ -205,7 +205,7 @@
                                 }
                                 else
                                 {
-                                    <span class="text-muted small">&mdash;</span>
+                                    <span class="cell-muted">&mdash;</span>
                                 }
                             </td>
                         </tr>

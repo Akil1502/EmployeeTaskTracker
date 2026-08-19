@@ -1,0 +1,28 @@
+@* The application's logo: a task list where the first line is checked off.
+   Drawn inline as SVG so it stays crisp at any size, inherits the surrounding
+   colour, and costs no extra request. *@
+
+<svg class="brand-mark @(Inverted ? "brand-mark-inverted" : null)"
+     width="@Size" height="@Size" viewBox="0 0 32 32" fill="none"
+     role="img" aria-label="Employee Task Tracker">
+
+    <rect x="0.5" y="0.5" width="31" height="31" rx="9" class="brand-mark-plate" />
+
+    @* Completed item: check plus a struck-through rule. *@
+    <path d="M8 11.6l2.2 2.2L14.6 9.4" class="brand-mark-check" />
+    <path d="M18.2 11.6H24" class="brand-mark-rule brand-mark-rule-done" />
+
+    @* Two outstanding items. *@
+    <path d="M8 18.2h4" class="brand-mark-tick" />
+    <path d="M15 18.2H24" class="brand-mark-rule" />
+    <path d="M8 23.4h4" class="brand-mark-tick" />
+    <path d="M15 23.4H20.5" class="brand-mark-rule" />
+</svg>
+
+@code {
+    /// <summary>Rendered width and height in pixels.</summary>
+    [Parameter] public int Size { get; set; } = 32;
+
+    /// <summary>Set on dark backgrounds to flip the plate and stroke colours.</summary>
+    [Parameter] public bool Inverted { get; set; }
+}

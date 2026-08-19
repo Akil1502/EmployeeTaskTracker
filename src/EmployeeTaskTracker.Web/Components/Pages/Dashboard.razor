@@ -6,8 +6,8 @@
 
 <div class="page-header">
     <div>
-        <h1 class="h3 mb-1">Dashboard</h1>
-        <p class="text-muted mb-0">@Subtitle</p>
+        <h1>Dashboard</h1>
+        <p class="mb-0">@Subtitle</p>
     </div>
     <button class="btn btn-outline-secondary" @onclick="LoadAsync" disabled="@_isLoading">
         @if (_isLoading)
@@ -26,7 +26,7 @@
 @if (_isLoading && _data is null)
 {
     <div class="d-flex justify-content-center py-5">
-        <div class="spinner-border text-primary" role="status">
+        <div class="spinner-border text-secondary" role="status">
             <span class="visually-hidden">Loading dashboard...</span>
         </div>
     </div>
@@ -36,38 +36,41 @@ else if (_data is not null)
     @* ---- The four summary cards required by the specification ---- *@
     <div class="row g-3 mb-4">
         <div class="col-6 col-xl-3">
-            <StatCard Label="Total Tasks" Value="@_data.Stats.TotalTasks" Variant="primary" Glyph="&#9632;" />
+            <StatCard Label="Total Tasks" Value="@_data.Stats.TotalTasks" Variant="total"
+                      Note="@($"{_data.Stats.CompletionPercent}% complete")" />
         </div>
         <div class="col-6 col-xl-3">
-            <StatCard Label="Pending Tasks" Value="@_data.Stats.PendingTasks" Variant="secondary" Glyph="&#9679;" />
+            <StatCard Label="Pending" Value="@_data.Stats.PendingTasks" Variant="pending"
+                      Note="@($"{_data.Stats.InProgressTasks} in progress")" />
         </div>
         <div class="col-6 col-xl-3">
-            <StatCard Label="Completed Tasks" Value="@_data.Stats.CompletedTasks" Variant="success" Glyph="&#10003;" />
+            <StatCard Label="Completed" Value="@_data.Stats.CompletedTasks" Variant="done" />
         </div>
         <div class="col-6 col-xl-3">
-            <StatCard Label="High Priority" Value="@_data.Stats.HighPriorityTasks" Variant="danger" Glyph="&#9650;" />
+            <StatCard Label="High Priority" Value="@_data.Stats.HighPriorityTasks" Variant="high"
+                      Note="@OverdueNote" />
         </div>
     </div>
 
     <div class="row g-3">
         <div class="col-12 col-xl-8">
-            <div class="card app-card h-100">
+            <div class="app-card h-100">
                 <div class="card-header d-flex align-items-center justify-content-between">
                     <span class="fw-semibold">Recent tasks</span>
-                    <a class="btn btn-sm btn-link text-decoration-none" href="/tasks">View all</a>
+                    <a class="btn btn-sm btn-link p-0 text-decoration-none" href="/tasks">View all</a>
                 </div>
 
                 @if (_data.RecentTasks.Count == 0)
                 {
-                    <div class="card-body text-center text-muted py-5">
-                        <div class="empty-glyph">&#9776;</div>
+                    <div class="text-center text-muted py-5">
+                        <div class="empty-glyph">&#9744;</div>
                         <p class="mb-0">No tasks yet.</p>
                     </div>
                 }
                 else
                 {
                     <div class="table-responsive">
-                        <table class="table table-hover align-middle mb-0">
+                        <table class="table table-hover align-middle">
                             <thead>
                                 <tr>
                                     <th scope="col">Title</th>
@@ -82,23 +85,30 @@ else if (_data is not null)
                                 {
                                     <tr>
                                         <td>
-                                            <div class="fw-semibold">@task.Title</div>
+                                            <div class="cell-title">@task.Title</div>
                                             @if (!string.IsNullOrWhiteSpace(task.Description))
                                             {
-                                                <div class="small text-muted text-truncate" style="max-width: 22rem;">
+                                                <div class="cell-sub text-truncate" style="max-width: 24rem;">
                                                     @task.Description
                                                 </div>
                                             }
                                         </td>
                                         <td class="d-none d-md-table-cell">
-                                            @(task.AssignedToName ?? "Unassigned")
+                                            @if (task.AssignedToName is null)
+                                            {
+                                                <span class="cell-muted">Unassigned</span>
+                                            }
+                                            else
+                                            {
+                                                @task.AssignedToName
+                                            }
                                         </td>
                                         <td><PriorityBadge Priority="@task.Priority" /></td>
                                         <td><StatusBadge Status="@task.Status" /></td>
                                         <td class="d-none d-sm-table-cell">
                                             @if (task.DueDate is null)
                                             {
-                                                <span class="text-muted">&mdash;</span>
+                                                <span class="cell-muted">&mdash;</span>
                                             }
                                             else
                                             {
@@ -117,36 +127,36 @@ else if (_data is not null)
         </div>
 
         <div class="col-12 col-xl-4">
-            <div class="card app-card h-100">
+            <div class="app-card h-100">
                 <div class="card-header fw-semibold">Progress</div>
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-baseline mb-1">
-                        <span class="text-muted">Completion</span>
-                        <span class="h4 mb-0">@_data.Stats.CompletionPercent%</span>
+                <div class="p-3">
+                    <div class="d-flex justify-content-between align-items-baseline mb-2">
+                        <span class="eyebrow">Completion</span>
+                        <span class="stat-value" style="font-size:1.5rem;">@_data.Stats.CompletionPercent%</span>
                     </div>
                     <div class="progress mb-4" role="progressbar"
                          aria-valuenow="@_data.Stats.CompletionPercent" aria-valuemin="0" aria-valuemax="100">
-                        <div class="progress-bar bg-success" style="width:@(_data.Stats.CompletionPercent)%"></div>
+                        <div class="progress-bar" style="width:@(_data.Stats.CompletionPercent)%"></div>
                     </div>
 
                     <dl class="breakdown mb-0">
-                        <div>
-                            <dt>In progress</dt>
-                            <dd>@_data.Stats.InProgressTasks</dd>
-                        </div>
-                        <div>
-                            <dt>Overdue</dt>
-                            <dd class="@(_data.Stats.OverdueTasks > 0 ? "text-danger fw-semibold" : null)">
-                                @_data.Stats.OverdueTasks
-                            </dd>
-                        </div>
                         <div>
                             <dt>Pending</dt>
                             <dd>@_data.Stats.PendingTasks</dd>
                         </div>
                         <div>
+                            <dt>In progress</dt>
+                            <dd>@_data.Stats.InProgressTasks</dd>
+                        </div>
+                        <div>
                             <dt>Completed</dt>
                             <dd>@_data.Stats.CompletedTasks</dd>
+                        </div>
+                        <div>
+                            <dt>Overdue</dt>
+                            <dd class="@(_data.Stats.OverdueTasks > 0 ? "text-danger" : null)">
+                                @_data.Stats.OverdueTasks
+                            </dd>
                         </div>
                     </dl>
                 </div>
@@ -163,6 +173,10 @@ else if (_data is not null)
     private string Subtitle => IsAdmin
         ? "Task activity across the organisation"
         : "A summary of the work assigned to you";
+
+    private string? OverdueNote => _data is null || _data.Stats.OverdueTasks == 0
+        ? null
+        : $"{_data.Stats.OverdueTasks} overdue";
 
     protected override Task OnAuthenticatedAsync() => LoadAsync();
 

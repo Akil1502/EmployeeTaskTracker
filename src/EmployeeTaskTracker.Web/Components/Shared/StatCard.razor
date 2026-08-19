@@ -1,22 +1,25 @@
-@* One of the dashboard summary cards. *@
+@* One dashboard summary figure. The number leads; the label sits above it in
+   small caps so the eye lands on the value first. *@
 
-<div class="card app-card stat-card stat-@Variant h-100">
-    <div class="card-body d-flex align-items-center gap-3">
-        <div class="stat-icon" aria-hidden="true">@((MarkupString)Glyph)</div>
-        <div>
-            <div class="stat-value">@Value</div>
-            <div class="stat-label">@Label</div>
-        </div>
+<div class="stat-card stat-@Variant">
+    <div class="stat-head">
+        <span class="stat-label">@Label</span>
+        <span class="stat-dot" aria-hidden="true"></span>
     </div>
+    <div class="stat-value">@Value</div>
+    @if (!string.IsNullOrWhiteSpace(Note))
+    {
+        <div class="stat-note">@Note</div>
+    }
 </div>
 
 @code {
     [Parameter, EditorRequired] public string Label { get; set; } = string.Empty;
     [Parameter, EditorRequired] public int Value { get; set; }
 
-    /// <summary>Bootstrap colour name driving the accent, e.g. "primary".</summary>
-    [Parameter] public string Variant { get; set; } = "primary";
+    /// <summary>One of total, pending, done or high - drives the accent dot.</summary>
+    [Parameter] public string Variant { get; set; } = "total";
 
-    /// <summary>An HTML entity used as a lightweight icon.</summary>
-    [Parameter] public string Glyph { get; set; } = "&#9632;";
+    /// <summary>Optional supporting line under the number.</summary>
+    [Parameter] public string? Note { get; set; }
 }

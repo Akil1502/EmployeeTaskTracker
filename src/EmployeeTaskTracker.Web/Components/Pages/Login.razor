@@ -6,64 +6,105 @@
 
 <PageTitle>Sign in - Employee Task Tracker</PageTitle>
 
-<div class="login-page">
-    <div class="login-card shadow-lg">
+<div class="login">
+
+    @* ---- Brand panel ---- *@
+    <aside class="login-aside">
         <div class="login-brand">
-            <div class="app-brand-mark login-mark">ET</div>
-            <h1 class="h4 mb-1">Employee Task Tracker</h1>
-            <p class="text-muted mb-0">Sign in to manage and track your work</p>
+            <BrandMark Size="30" Inverted="true" />
+            <span class="login-wordmark">Task Tracker</span>
         </div>
 
-        <EditForm Model="_model" OnValidSubmit="SignInAsync" FormName="login">
-            <DataAnnotationsValidator />
+        <div class="login-aside-body">
+            <h1 class="login-headline">
+                Every task accounted for,<br />
+                from <em>assigned</em> to <em>done</em>.
+            </h1>
 
-            @if (!string.IsNullOrEmpty(_errorMessage))
-            {
-                <div class="alert alert-danger py-2" role="alert">@_errorMessage</div>
-            }
+            <p class="login-sub">
+                Assign work across the team, watch progress move, and see what is falling
+                behind before it becomes a problem.
+            </p>
 
-            <div class="mb-3">
-                <label class="form-label" for="email">Email address</label>
-                <InputText id="email" class="form-control form-control-lg" @bind-Value="_model.Email"
-                           autocomplete="username" placeholder="you@tasktracker.com" disabled="@_isBusy" />
-                <ValidationMessage For="() => _model.Email" class="text-danger small" />
-            </div>
+            <ul class="login-points">
+                <li>
+                    <span class="num">01</span>
+                    <span>Assign work to any employee and set its priority and due date</span>
+                </li>
+                <li>
+                    <span class="num">02</span>
+                    <span>Track every task through pending, in progress and completed</span>
+                </li>
+                <li>
+                    <span class="num">03</span>
+                    <span>See totals, overdue work and high-priority items at a glance</span>
+                </li>
+            </ul>
+        </div>
 
-            <div class="mb-4">
-                <label class="form-label" for="password">Password</label>
-                <InputText id="password" type="password" class="form-control form-control-lg"
-                           @bind-Value="_model.Password" autocomplete="current-password"
-                           placeholder="Enter your password" disabled="@_isBusy" />
-                <ValidationMessage For="() => _model.Password" class="text-danger small" />
-            </div>
+        <div class="login-foot">Employee Task Tracker System</div>
+    </aside>
 
-            <button class="btn btn-primary btn-lg w-100" type="submit" disabled="@_isBusy">
-                @if (_isBusy)
+    @* ---- Form panel ---- *@
+    <main class="login-main">
+        <div class="login-form">
+            <h2 class="login-title">Sign in</h2>
+            <p class="login-hint">Use your work email address to continue.</p>
+
+            <EditForm Model="_model" OnValidSubmit="SignInAsync" FormName="login">
+                <DataAnnotationsValidator />
+
+                @if (!string.IsNullOrEmpty(_errorMessage))
                 {
-                    <span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>
-                    <span>Signing in...</span>
+                    <div class="alert alert-danger" role="alert">@_errorMessage</div>
                 }
-                else
-                {
-                    <span>Sign in</span>
-                }
-            </button>
-        </EditForm>
 
-        <div class="login-demo">
-            <div class="text-muted small mb-2">Demo accounts &mdash; click to fill</div>
-            <div class="d-grid gap-2">
-                <button type="button" class="btn btn-sm btn-outline-secondary"
-                        @onclick='() => UseDemo("admin@tasktracker.com")' disabled="@_isBusy">
-                    admin@tasktracker.com &middot; Administrator
+                <div class="mb-3">
+                    <label class="form-label" for="email">Email address</label>
+                    <InputText id="email" class="form-control form-control-lg" @bind-Value="_model.Email"
+                               autocomplete="username" placeholder="you@tasktracker.com"
+                               disabled="@_isBusy" />
+                    <ValidationMessage For="() => _model.Email" class="text-danger small mt-1 d-block" />
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label" for="password">Password</label>
+                    <InputText id="password" type="password" class="form-control form-control-lg"
+                               @bind-Value="_model.Password" autocomplete="current-password"
+                               placeholder="Enter your password" disabled="@_isBusy" />
+                    <ValidationMessage For="() => _model.Password" class="text-danger small mt-1 d-block" />
+                </div>
+
+                <button class="btn btn-primary btn-lg w-100" type="submit" disabled="@_isBusy">
+                    @if (_isBusy)
+                    {
+                        <span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>
+                        <span>Signing in...</span>
+                    }
+                    else
+                    {
+                        <span>Sign in</span>
+                    }
                 </button>
-                <button type="button" class="btn btn-sm btn-outline-secondary"
-                        @onclick='() => UseDemo("arun@tasktracker.com")' disabled="@_isBusy">
-                    arun@tasktracker.com &middot; Employee
-                </button>
+            </EditForm>
+
+            <div class="login-demo">
+                <div class="eyebrow mb-2">Demo accounts</div>
+                <div class="d-grid gap-2">
+                    <button type="button" class="demo-chip"
+                            @onclick='() => UseDemo("admin@tasktracker.com")' disabled="@_isBusy">
+                        <span>admin@tasktracker.com</span>
+                        <span class="role">Admin</span>
+                    </button>
+                    <button type="button" class="demo-chip"
+                            @onclick='() => UseDemo("arun@tasktracker.com")' disabled="@_isBusy">
+                        <span>arun@tasktracker.com</span>
+                        <span class="role">Employee</span>
+                    </button>
+                </div>
             </div>
         </div>
-    </div>
+    </main>
 </div>
 
 @code {
