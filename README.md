@@ -31,9 +31,10 @@ dotnet --list-sdks
 You need a **9.0.x** entry. If the command is not recognised, or no 9.0 line appears, install the
 [.NET 9 SDK](https://dotnet.microsoft.com/download/dotnet/9.0).
 
-You also need **SQL Server** (Express edition is fine) and a way to run a `.sql` script against it —
-either [SQL Server Management Studio](https://learn.microsoft.com/sql/ssms/download-sql-server-management-studio-ssms)
-or the SQL Server Object Explorer built into Visual Studio.
+You also need **SQL Server** (Express edition is fine) and a way to run a `.sql` script against it.
+Either works: [SQL Server Management Studio](https://learn.microsoft.com/sql/ssms/download-sql-server-management-studio-ssms),
+or the **SQL Server Object Explorer** built into Visual Studio — step 4 covers both, so SSMS is not
+required if you have Visual Studio.
 
 Visual Studio is optional. The solution builds and runs entirely from the command line, but if you
 use it, **Visual Studio 2022 version 17.12 or later, or Visual Studio 2026**. The project targets
@@ -61,20 +62,45 @@ SELECT @@SERVERNAME;
 
 ### Step 4 — Create the database and run the script
 
-Connect to your instance, then run:
+Use whichever tool you prefer — both do exactly the same thing.
 
-```sql
-CREATE DATABASE EmployeeTaskTrackerDb;
-```
+#### Option A — SQL Server Management Studio
 
-Now open `database/setup.sql` from the cloned folder and execute it (**F5** in SSMS). Check that the
-`USE [EmployeeTaskTrackerDb]` line at the top matches the database you just created.
+1. Connect to your instance.
+2. Open a new query window and run:
 
-The script creates both tables, all eleven stored procedures, the supporting indexes and the demo
-data. It is safe to run more than once: procedures are recreated every time, while tables and seed
-rows are only created if they are missing, so re-running it never destroys data you have entered.
+   ```sql
+   CREATE DATABASE EmployeeTaskTrackerDb;
+   ```
 
-**Confirm it worked** by running this in the same query window:
+3. Open `database/setup.sql` from the cloned folder (**File → Open → File**).
+4. Check the `USE [EmployeeTaskTrackerDb]` line at the top matches the database you just created.
+5. Press **F5** to execute.
+
+#### Option B — Visual Studio
+
+Visual Studio can do all of this without SSMS installed.
+
+1. Open **View → SQL Server Object Explorer**.
+2. Expand **SQL Server**. If your instance is not listed, right-click **SQL Server → Add SQL Server**
+   and connect to it.
+3. Right-click the instance's **Databases** node → **Add New Database**, and name it
+   `EmployeeTaskTrackerDb`.
+4. Open `database/setup.sql` — it is in the **database** folder in Solution Explorer once you have
+   opened `EmployeeTaskTracker.sln`.
+5. Use the database dropdown on the SQL toolbar to point the query at `EmployeeTaskTrackerDb`, then
+   click **Execute** (or press **Ctrl+Shift+E**).
+
+> If the toolbar does not appear, right-click the editor and choose **Connection → Connect**, pick
+> your instance and the `EmployeeTaskTrackerDb` database, then execute.
+
+#### What the script does, and confirming it worked
+
+It creates both tables, all eleven stored procedures, the supporting indexes and the demo data. It is
+safe to run more than once: procedures are recreated every time, while tables and seed rows are only
+created if they are missing, so re-running it never destroys data you have entered.
+
+Run this in the same query window to confirm:
 
 ```sql
 USE EmployeeTaskTrackerDb;
@@ -84,10 +110,6 @@ SELECT (SELECT COUNT(*) FROM dbo.Users)      AS Users,
 ```
 
 You should see **4 users, 8 tasks and 11 procedures**.
-
-> **Using Visual Studio instead of SSMS?** Open **View → SQL Server Object Explorer**, connect to
-> your instance, right-click **Databases → Add New Database** and name it `EmployeeTaskTrackerDb`.
-> Then open `database/setup.sql`, and use the toolbar to point it at that database before executing.
 
 ### Step 5 — Point the application at your database
 
