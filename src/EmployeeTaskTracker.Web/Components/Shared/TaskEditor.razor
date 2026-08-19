@@ -1,0 +1,118 @@
+@* Create / edit dialog for a task. Rendered as a Bootstrap modal without the
+   Bootstrap JavaScript, so its visibility is driven purely by Blazor. *@
+
+<div class="modal fade show d-block app-modal" tabindex="-1" role="dialog" aria-modal="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <EditForm Model="Model" OnValidSubmit="HandleSubmit" FormName="task-editor">
+                <DataAnnotationsValidator />
+
+                <div class="modal-header">
+                    <h5 class="modal-title">@(IsNew ? "Add task" : "Edit task")</h5>
+                    <button type="button" class="btn-close" @onclick="OnCancel" disabled="@IsSaving"></button>
+                </div>
+
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label" for="title">Title <span class="text-danger">*</span></label>
+                        <InputText id="title" class="form-control" @bind-Value="Model.Title"
+                                   placeholder="What needs to be done?" disabled="@IsSaving" />
+                        <ValidationMessage For="() => Model.Title" class="text-danger small" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label" for="description">Description</label>
+                        <InputTextArea id="description" class="form-control" rows="3"
+                                       @bind-Value="Model.Description"
+                                       placeholder="Add any detail the assignee will need"
+                                       disabled="@IsSaving" />
+                        <ValidationMessage For="() => Model.Description" class="text-danger small" />
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-12 col-md-6">
+                            <label class="form-label" for="assignedTo">Assign to</label>
+                            <select id="assignedTo" class="form-select" disabled="@IsSaving"
+                                    value="@(Model.AssignedTo?.ToString() ?? string.Empty)"
+                                    @onchange="OnAssigneeChanged">
+                                <option value="">Unassigned</option>
+                                @foreach (var employee in Employees)
+                                {
+                                    <option value="@employee.UserId">@employee.Name</option>
+                                }
+                            </select>
+                            @if (Employees.Count == 0)
+                            {
+                                <div class="form-text text-warning">
+                                    No employee accounts were found to assign this to.
+                                </div>
+                            }
+                        </div>
+
+                        <div class="col-6 col-md-3">
+                            <label class="form-label" for="priority">Priority</label>
+                            <InputSelect id="priority" class="form-select" @bind-Value="Model.Priority"
+                                         disabled="@IsSaving">
+                                @foreach (var priority in TaskPriorities.All)
+                                {
+                                    <option value="@priority">@priority</option>
+                                }
+                            </InputSelect>
+                        </div>
+
+                        <div class="col-6 col-md-3">
+                            <label class="form-label" for="status">Status</label>
+                            <InputSelect id="status" class="form-select" @bind-Value="Model.Status"
+                                         disabled="@IsSaving">
+                                @foreach (var status in TaskStatuses.All)
+                                {
+                                    <option value="@status">@TaskStatuses.ToDisplay(status)</option>
+                                }
+                            </InputSelect>
+                        </div>
+
+                        <div class="col-12 col-md-6">
+                            <label class="form-label" for="dueDate">Due date</label>
+                            <InputDate id="dueDate" class="form-control" @bind-Value="Model.DueDate"
+                                       disabled="@IsSaving" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary"
+                            @onclick="OnCancel" disabled="@IsSaving">
+                        Cancel
+                    </button>
+                    <button type="submit" class="btn btn-primary" disabled="@IsSaving">
+                        @if (IsSaving)
+                        {
+                            <span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>
+                        }
+                        @(IsNew ? "Create task" : "Save changes")
+                    </button>
+                </div>
+            </EditForm>
+        </div>
+    </div>
+</div>
+
+<div class="modal-backdrop fade show"></div>
+
+@code {
+    [Parameter, EditorRequired] public TaskSaveRequest Model { get; set; } = new();
+    [Parameter] public List<UserDto> Employees { get; set; } = [];
+    [Parameter] public bool IsSaving { get; set; }
+    [Parameter] public EventCallback<TaskSaveRequest> OnSave { get; set; }
+    [Parameter] public EventCallback OnCancel { get; set; }
+
+    private bool IsNew => Model.TaskId == 0;
+
+    private void OnAssigneeChanged(ChangeEventArgs e)
+    {
+        var raw = e.Value?.ToString();
+        Model.AssignedTo = int.TryParse(raw, out var id) ? id : null;
+    }
+
+    private Task HandleSubmit() => OnSave.InvokeAsync(Model);
+}

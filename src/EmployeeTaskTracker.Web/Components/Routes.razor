@@ -1,0 +1,37 @@
+@* Routing with authorization. Any page marked [Authorize] sends an anonymous
+   visitor to the login page, and the page they wanted is remembered so they
+   land back on it after signing in. *@
+
+<Router AppAssembly="typeof(Program).Assembly" NotFoundPage="typeof(Pages.NotFound)">
+    <Found Context="routeData">
+        <AuthorizeRouteView RouteData="routeData" DefaultLayout="typeof(Layout.MainLayout)">
+            <NotAuthorized>
+                @if (context.User.Identity?.IsAuthenticated != true)
+                {
+                    <RedirectToLogin />
+                }
+                else
+                {
+                    <div class="container py-5">
+                        <div class="alert alert-warning shadow-sm" role="alert">
+                            <h4 class="alert-heading">Not allowed</h4>
+                            <p class="mb-0">
+                                This page is restricted to administrators. If you believe you should have
+                                access, contact your system administrator.
+                            </p>
+                        </div>
+                        <a class="btn btn-primary" href="/dashboard">Back to dashboard</a>
+                    </div>
+                }
+            </NotAuthorized>
+            <Authorizing>
+                <div class="d-flex justify-content-center align-items-center" style="min-height: 60vh;">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Checking your session...</span>
+                    </div>
+                </div>
+            </Authorizing>
+        </AuthorizeRouteView>
+        <FocusOnNavigate RouteData="routeData" Selector="h1" />
+    </Found>
+</Router>

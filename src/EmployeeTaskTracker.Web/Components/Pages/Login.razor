@@ -1,0 +1,132 @@
+@page "/login"
+@page "/"
+@inject TaskApiClient Api
+@inject TokenStore TokenStore
+@inject NavigationManager Navigation
+
+<PageTitle>Sign in - Employee Task Tracker</PageTitle>
+
+<div class="login-page">
+    <div class="login-card shadow-lg">
+        <div class="login-brand">
+            <div class="app-brand-mark login-mark">ET</div>
+            <h1 class="h4 mb-1">Employee Task Tracker</h1>
+            <p class="text-muted mb-0">Sign in to manage and track your work</p>
+        </div>
+
+        <EditForm Model="_model" OnValidSubmit="SignInAsync" FormName="login">
+            <DataAnnotationsValidator />
+
+            @if (!string.IsNullOrEmpty(_errorMessage))
+            {
+                <div class="alert alert-danger py-2" role="alert">@_errorMessage</div>
+            }
+
+            <div class="mb-3">
+                <label class="form-label" for="email">Email address</label>
+                <InputText id="email" class="form-control form-control-lg" @bind-Value="_model.Email"
+                           autocomplete="username" placeholder="you@tasktracker.com" disabled="@_isBusy" />
+                <ValidationMessage For="() => _model.Email" class="text-danger small" />
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label" for="password">Password</label>
+                <InputText id="password" type="password" class="form-control form-control-lg"
+                           @bind-Value="_model.Password" autocomplete="current-password"
+                           placeholder="Enter your password" disabled="@_isBusy" />
+                <ValidationMessage For="() => _model.Password" class="text-danger small" />
+            </div>
+
+            <button class="btn btn-primary btn-lg w-100" type="submit" disabled="@_isBusy">
+                @if (_isBusy)
+                {
+                    <span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>
+                    <span>Signing in...</span>
+                }
+                else
+                {
+                    <span>Sign in</span>
+                }
+            </button>
+        </EditForm>
+
+        <div class="login-demo">
+            <div class="text-muted small mb-2">Demo accounts &mdash; click to fill</div>
+            <div class="d-grid gap-2">
+                <button type="button" class="btn btn-sm btn-outline-secondary"
+                        @onclick='() => UseDemo("admin@tasktracker.com")' disabled="@_isBusy">
+                    admin@tasktracker.com &middot; Administrator
+                </button>
+                <button type="button" class="btn btn-sm btn-outline-secondary"
+                        @onclick='() => UseDemo("arun@tasktracker.com")' disabled="@_isBusy">
+                    arun@tasktracker.com &middot; Employee
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [SupplyParameterFromQuery(Name = "returnUrl")]
+    private string? ReturnUrl { get; set; }
+
+    private readonly LoginRequest _model = new();
+    private string? _errorMessage;
+    private bool _isBusy;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Somebody already signed in has no business on the login page.
+        if (await TokenStore.GetSessionAsync() is not null)
+            Navigation.NavigateTo(SafeReturnUrl(), replace: true);
+    }
+
+    private void UseDemo(string email)
+    {
+        _model.Email = email;
+        _model.Password = "Password@123";
+        _errorMessage = null;
+    }
+
+    private async Task SignInAsync()
+    {
+        _isBusy = true;
+        _errorMessage = null;
+
+        try
+        {
+            var session = await Api.LoginAsync(_model);
+            await TokenStore.SetSessionAsync(session);
+            Navigation.NavigateTo(SafeReturnUrl(), replace: true);
+        }
+        catch (ApiException ex)
+        {
+            _errorMessage = ex.Message;
+        }
+        finally
+        {
+            _isBusy = false;
+        }
+    }
+
+    /// <summary>
+    /// Only ever returns a path inside this application. An absolute URL in
+    /// returnUrl would otherwise let a crafted link bounce a freshly signed-in
+    /// user off to another site.
+    /// </summary>
+    private string SafeReturnUrl()
+    {
+        if (string.IsNullOrWhiteSpace(ReturnUrl))
+            return "/dashboard";
+
+        var candidate = ReturnUrl.Trim();
+
+        if (candidate.StartsWith("//", StringComparison.Ordinal)
+            || candidate.Contains("://", StringComparison.Ordinal))
+        {
+            return "/dashboard";
+        }
+
+        return "/" + candidate.TrimStart('/');
+    }
+}

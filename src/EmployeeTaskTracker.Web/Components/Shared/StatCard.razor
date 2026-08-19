@@ -1,0 +1,22 @@
+@* One of the dashboard summary cards. *@
+
+<div class="card app-card stat-card stat-@Variant h-100">
+    <div class="card-body d-flex align-items-center gap-3">
+        <div class="stat-icon" aria-hidden="true">@((MarkupString)Glyph)</div>
+        <div>
+            <div class="stat-value">@Value</div>
+            <div class="stat-label">@Label</div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public string Label { get; set; } = string.Empty;
+    [Parameter, EditorRequired] public int Value { get; set; }
+
+    /// <summary>Bootstrap colour name driving the accent, e.g. "primary".</summary>
+    [Parameter] public string Variant { get; set; } = "primary";
+
+    /// <summary>An HTML entity used as a lightweight icon.</summary>
+    [Parameter] public string Glyph { get; set; } = "&#9632;";
+}

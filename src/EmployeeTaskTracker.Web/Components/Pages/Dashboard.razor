@@ -1,0 +1,187 @@
+@page "/dashboard"
+@inherits ProtectedPage
+@inject TaskApiClient Api
+
+<PageTitle>Dashboard - Employee Task Tracker</PageTitle>
+
+<div class="page-header">
+    <div>
+        <h1 class="h3 mb-1">Dashboard</h1>
+        <p class="text-muted mb-0">@Subtitle</p>
+    </div>
+    <button class="btn btn-outline-secondary" @onclick="LoadAsync" disabled="@_isLoading">
+        @if (_isLoading)
+        {
+            <span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>
+        }
+        Refresh
+    </button>
+</div>
+
+@if (_errorMessage is not null)
+{
+    <div class="alert alert-danger" role="alert">@_errorMessage</div>
+}
+
+@if (_isLoading && _data is null)
+{
+    <div class="d-flex justify-content-center py-5">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading dashboard...</span>
+        </div>
+    </div>
+}
+else if (_data is not null)
+{
+    @* ---- The four summary cards required by the specification ---- *@
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-xl-3">
+            <StatCard Label="Total Tasks" Value="@_data.Stats.TotalTasks" Variant="primary" Glyph="&#9632;" />
+        </div>
+        <div class="col-6 col-xl-3">
+            <StatCard Label="Pending Tasks" Value="@_data.Stats.PendingTasks" Variant="secondary" Glyph="&#9679;" />
+        </div>
+        <div class="col-6 col-xl-3">
+            <StatCard Label="Completed Tasks" Value="@_data.Stats.CompletedTasks" Variant="success" Glyph="&#10003;" />
+        </div>
+        <div class="col-6 col-xl-3">
+            <StatCard Label="High Priority" Value="@_data.Stats.HighPriorityTasks" Variant="danger" Glyph="&#9650;" />
+        </div>
+    </div>
+
+    <div class="row g-3">
+        <div class="col-12 col-xl-8">
+            <div class="card app-card h-100">
+                <div class="card-header d-flex align-items-center justify-content-between">
+                    <span class="fw-semibold">Recent tasks</span>
+                    <a class="btn btn-sm btn-link text-decoration-none" href="/tasks">View all</a>
+                </div>
+
+                @if (_data.RecentTasks.Count == 0)
+                {
+                    <div class="card-body text-center text-muted py-5">
+                        <div class="empty-glyph">&#9776;</div>
+                        <p class="mb-0">No tasks yet.</p>
+                    </div>
+                }
+                else
+                {
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Title</th>
+                                    <th scope="col" class="d-none d-md-table-cell">Assigned to</th>
+                                    <th scope="col">Priority</th>
+                                    <th scope="col">Status</th>
+                                    <th scope="col" class="d-none d-sm-table-cell">Due</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var task in _data.RecentTasks)
+                                {
+                                    <tr>
+                                        <td>
+                                            <div class="fw-semibold">@task.Title</div>
+                                            @if (!string.IsNullOrWhiteSpace(task.Description))
+                                            {
+                                                <div class="small text-muted text-truncate" style="max-width: 22rem;">
+                                                    @task.Description
+                                                </div>
+                                            }
+                                        </td>
+                                        <td class="d-none d-md-table-cell">
+                                            @(task.AssignedToName ?? "Unassigned")
+                                        </td>
+                                        <td><PriorityBadge Priority="@task.Priority" /></td>
+                                        <td><StatusBadge Status="@task.Status" /></td>
+                                        <td class="d-none d-sm-table-cell">
+                                            @if (task.DueDate is null)
+                                            {
+                                                <span class="text-muted">&mdash;</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="@(task.IsOverdue ? "text-danger fw-semibold" : null)">
+                                                    @task.DueDate.Value.ToString("dd MMM yyyy")
+                                                </span>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <div class="col-12 col-xl-4">
+            <div class="card app-card h-100">
+                <div class="card-header fw-semibold">Progress</div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-baseline mb-1">
+                        <span class="text-muted">Completion</span>
+                        <span class="h4 mb-0">@_data.Stats.CompletionPercent%</span>
+                    </div>
+                    <div class="progress mb-4" role="progressbar"
+                         aria-valuenow="@_data.Stats.CompletionPercent" aria-valuemin="0" aria-valuemax="100">
+                        <div class="progress-bar bg-success" style="width:@(_data.Stats.CompletionPercent)%"></div>
+                    </div>
+
+                    <dl class="breakdown mb-0">
+                        <div>
+                            <dt>In progress</dt>
+                            <dd>@_data.Stats.InProgressTasks</dd>
+                        </div>
+                        <div>
+                            <dt>Overdue</dt>
+                            <dd class="@(_data.Stats.OverdueTasks > 0 ? "text-danger fw-semibold" : null)">
+                                @_data.Stats.OverdueTasks
+                            </dd>
+                        </div>
+                        <div>
+                            <dt>Pending</dt>
+                            <dd>@_data.Stats.PendingTasks</dd>
+                        </div>
+                        <div>
+                            <dt>Completed</dt>
+                            <dd>@_data.Stats.CompletedTasks</dd>
+                        </div>
+                    </dl>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private DashboardDto? _data;
+    private string? _errorMessage;
+    private bool _isLoading = true;
+
+    private string Subtitle => IsAdmin
+        ? "Task activity across the organisation"
+        : "A summary of the work assigned to you";
+
+    protected override Task OnAuthenticatedAsync() => LoadAsync();
+
+    private async Task LoadAsync()
+    {
+        _isLoading = true;
+        _errorMessage = null;
+
+        try
+        {
+            _data = await Api.GetDashboardAsync();
+        }
+        catch (ApiException ex)
+        {
+            _errorMessage = ex.Message;
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+}

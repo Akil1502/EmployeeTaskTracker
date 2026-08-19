@@ -1,0 +1,46 @@
+@* Generic confirmation modal, used before a destructive action. *@
+
+<div class="modal fade show d-block app-modal" tabindex="-1" role="dialog" aria-modal="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">@Title</h5>
+                <button type="button" class="btn-close" @onclick="OnCancel" disabled="@IsBusy"></button>
+            </div>
+
+            <div class="modal-body">
+                <p class="mb-0">@Message</p>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary"
+                        @onclick="OnCancel" disabled="@IsBusy">
+                    Cancel
+                </button>
+                <button type="button" class="btn btn-@ConfirmVariant"
+                        @onclick="OnConfirm" disabled="@IsBusy">
+                    @if (IsBusy)
+                    {
+                        <span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>
+                    }
+                    @ConfirmText
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal-backdrop fade show"></div>
+
+@code {
+    [Parameter] public string Title { get; set; } = "Are you sure?";
+    [Parameter] public string Message { get; set; } = string.Empty;
+    [Parameter] public string ConfirmText { get; set; } = "Confirm";
+
+    /// <summary>Bootstrap button variant for the confirm action.</summary>
+    [Parameter] public string ConfirmVariant { get; set; } = "primary";
+
+    [Parameter] public bool IsBusy { get; set; }
+    [Parameter] public EventCallback OnConfirm { get; set; }
+    [Parameter] public EventCallback OnCancel { get; set; }
+}

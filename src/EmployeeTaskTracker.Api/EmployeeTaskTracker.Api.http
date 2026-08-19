@@ -1,0 +1,116 @@
+### Employee Task Tracker API - sample requests
+### Run these from Visual Studio's HTTP editor or the REST Client extension.
+### Start with the login request: it captures the token into a variable that
+### every request below reuses.
+
+@host = http://localhost:5080
+
+### Sign in as the administrator
+# @name login
+POST {{host}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@tasktracker.com",
+  "password": "Password@123"
+}
+
+### Capture the token from the login response above
+@token = {{login.response.body.token}}
+
+### Current user
+GET {{host}}/api/auth/me
+Authorization: Bearer {{token}}
+
+### Dashboard - summary cards and recent tasks
+GET {{host}}/api/dashboard
+Authorization: Bearer {{token}}
+
+### All tasks
+GET {{host}}/api/tasks
+Authorization: Bearer {{token}}
+
+### Search by title
+GET {{host}}/api/tasks?search=report
+Authorization: Bearer {{token}}
+
+### Filter by status and priority together
+GET {{host}}/api/tasks?status=Pending&priority=High
+Authorization: Bearer {{token}}
+
+### Employees available for assignment (Admin only)
+GET {{host}}/api/users/employees
+Authorization: Bearer {{token}}
+
+### Create a task (Admin only)
+# @name created
+POST {{host}}/api/tasks
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "title": "Draft the quarterly compliance report",
+  "description": "Pull the figures from each department and circulate for review.",
+  "assignedTo": 2,
+  "priority": "High",
+  "status": "Pending",
+  "dueDate": "2026-09-30T00:00:00"
+}
+
+### Update that task (Admin only)
+PUT {{host}}/api/tasks/{{created.response.body.taskId}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "taskId": {{created.response.body.taskId}},
+  "title": "Draft the quarterly compliance report (revised)",
+  "description": "Pull the figures from each department and circulate for review.",
+  "assignedTo": 3,
+  "priority": "Medium",
+  "status": "InProgress",
+  "dueDate": "2026-10-15T00:00:00"
+}
+
+### Update only the status
+PATCH {{host}}/api/tasks/{{created.response.body.taskId}}/status
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "status": "Completed"
+}
+
+### Delete the task (Admin only)
+DELETE {{host}}/api/tasks/{{created.response.body.taskId}}
+Authorization: Bearer {{token}}
+
+### Sign in as an employee, to see the restricted view
+# @name employeeLogin
+POST {{host}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "arun@tasktracker.com",
+  "password": "Password@123"
+}
+
+@employeeToken = {{employeeLogin.response.body.token}}
+
+### An employee sees only their own tasks
+GET {{host}}/api/tasks
+Authorization: Bearer {{employeeToken}}
+
+### An employee creating a task is rejected with 403
+POST {{host}}/api/tasks
+Authorization: Bearer {{employeeToken}}
+Content-Type: application/json
+
+{
+  "title": "Should be forbidden",
+  "priority": "Low",
+  "status": "Pending"
+}
+
+### Health probe (no authentication)
+GET {{host}}/health

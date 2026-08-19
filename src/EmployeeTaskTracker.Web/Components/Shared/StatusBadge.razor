@@ -1,0 +1,14 @@
+@* Colour-coded pill for a task status. *@
+
+<span class="badge rounded-pill @CssClass">@TaskStatuses.ToDisplay(Status)</span>
+
+@code {
+    [Parameter, EditorRequired] public string Status { get; set; } = TaskStatuses.Pending;
+
+    private string CssClass => Status switch
+    {
+        TaskStatuses.Completed => "text-bg-success",
+        TaskStatuses.InProgress => "text-bg-info",
+        _ => "text-bg-secondary"
+    };
+}

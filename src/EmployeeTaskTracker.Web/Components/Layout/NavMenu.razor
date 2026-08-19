@@ -1,0 +1,59 @@
+@* Side navigation. The Task Management entry is visible to everybody, but it
+   renders as a read-only list for an Employee - see Tasks.razor. *@
+
+<nav class="app-sidebar @(IsExpanded ? "expanded" : null)">
+    <div class="app-brand">
+        <div class="app-brand-mark">ET</div>
+        <div>
+            <div class="app-brand-title">Task Tracker</div>
+            <div class="app-brand-sub">Employee Task Tracker System</div>
+        </div>
+    </div>
+
+    <ul class="app-nav">
+        <li>
+            <NavLink class="app-nav-link" href="dashboard" @onclick="NotifyNavigated">
+                <span class="app-nav-icon" aria-hidden="true">&#9632;</span>
+                Dashboard
+            </NavLink>
+        </li>
+        <li>
+            <NavLink class="app-nav-link" href="tasks" @onclick="NotifyNavigated">
+                <span class="app-nav-icon" aria-hidden="true">&#9776;</span>
+                @(IsAdmin ? "Task Management" : "My Tasks")
+            </NavLink>
+        </li>
+    </ul>
+
+    <div class="app-sidebar-footer">
+        <AuthorizeView Roles="@Roles.Admin">
+            <span class="badge text-bg-primary">Administrator</span>
+        </AuthorizeView>
+        <AuthorizeView Roles="@Roles.Employee">
+            <span class="badge text-bg-secondary">Employee</span>
+        </AuthorizeView>
+    </div>
+</nav>
+
+@code {
+    /// <summary>Whether the drawer is open on a small screen.</summary>
+    [Parameter] public bool IsExpanded { get; set; }
+
+    /// <summary>Raised after a link is followed, so the drawer can close.</summary>
+    [Parameter] public EventCallback OnNavigated { get; set; }
+
+    [CascadingParameter] private Task<AuthenticationState>? AuthenticationStateTask { get; set; }
+
+    private bool IsAdmin { get; set; }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (AuthenticationStateTask is null)
+            return;
+
+        var state = await AuthenticationStateTask;
+        IsAdmin = state.User.IsInRole(Roles.Admin);
+    }
+
+    private Task NotifyNavigated() => OnNavigated.InvokeAsync();
+}

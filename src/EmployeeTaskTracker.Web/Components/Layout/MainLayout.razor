@@ -1,0 +1,79 @@
+@inherits LayoutComponentBase
+@inject TokenStore TokenStore
+@inject NavigationManager Navigation
+
+@* The login page renders bare, so the application chrome below only appears
+   once somebody is signed in. *@
+
+<AuthorizeView>
+    <Authorized>
+        <div class="app-shell @(_navExpanded ? "nav-open" : null)">
+            <NavMenu IsExpanded="_navExpanded" OnNavigated="CloseNav" />
+
+            @* Tapping the dimmed backdrop closes the drawer on small screens. *@
+            <div class="app-backdrop d-lg-none" @onclick="CloseNav"></div>
+
+            <div class="app-main">
+                <header class="app-topbar">
+                    <button class="btn app-nav-toggle d-lg-none" type="button"
+                            @onclick="ToggleNav" aria-label="Toggle navigation" aria-expanded="@_navExpanded">
+                        <span class="app-nav-toggle-bar"></span>
+                        <span class="app-nav-toggle-bar"></span>
+                        <span class="app-nav-toggle-bar"></span>
+                    </button>
+
+                    <div class="ms-auto d-flex align-items-center gap-3">
+                        <div class="text-end d-none d-sm-block">
+                            <div class="fw-semibold lh-1">@context.User.Identity?.Name</div>
+                            <small class="text-muted">@RoleLabel(context)</small>
+                        </div>
+                        <div class="app-avatar" title="@context.User.Identity?.Name">
+                            @Initials(context.User.Identity?.Name)
+                        </div>
+                        <button class="btn btn-outline-secondary btn-sm" @onclick="SignOutAsync">
+                            Sign out
+                        </button>
+                    </div>
+                </header>
+
+                <main class="app-content">
+                    @Body
+                </main>
+            </div>
+        </div>
+    </Authorized>
+
+    <NotAuthorized>
+        @Body
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+    private bool _navExpanded;
+
+    private void ToggleNav() => _navExpanded = !_navExpanded;
+
+    private void CloseNav() => _navExpanded = false;
+
+    private async Task SignOutAsync()
+    {
+        await TokenStore.ClearAsync();
+        Navigation.NavigateTo("/login", replace: true);
+    }
+
+    private static string RoleLabel(AuthenticationState state)
+        => state.User.IsInRole(Roles.Admin) ? "Administrator" : "Employee";
+
+    /// <summary>"Arun Kumar" becomes "AK", for the avatar circle.</summary>
+    private static string Initials(string? name)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+            return "?";
+
+        var parts = name.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+
+        return parts.Length == 1
+            ? parts[0][..1].ToUpperInvariant()
+            : $"{parts[0][0]}{parts[^1][0]}".ToUpperInvariant();
+    }
+}

@@ -1,0 +1,478 @@
+﻿@page "/tasks"
+@inherits ProtectedPage
+@implements IDisposable
+@inject TaskApiClient Api
+
+<PageTitle>Tasks - Employee Task Tracker</PageTitle>
+
+<div class="page-header">
+    <div>
+        <h1 class="h3 mb-1">@(IsAdmin ? "Task Management" : "My Tasks")</h1>
+        <p class="text-muted mb-0">
+            @(IsAdmin
+                ? "Create, assign and track work across the team"
+                : "Update the status of the work assigned to you")
+        </p>
+    </div>
+
+    @if (IsAdmin)
+    {
+        <button class="btn btn-primary" @onclick="OpenCreate">
+            <span aria-hidden="true">+</span> Add task
+        </button>
+    }
+</div>
+
+@if (_errorMessage is not null)
+{
+    <div class="alert alert-danger alert-dismissible" role="alert">
+        @_errorMessage
+        <button type="button" class="btn-close" @onclick="() => _errorMessage = null"></button>
+    </div>
+}
+
+@if (_successMessage is not null)
+{
+    <div class="alert alert-success alert-dismissible" role="alert">
+        @_successMessage
+        <button type="button" class="btn-close" @onclick="() => _successMessage = null"></button>
+    </div>
+}
+
+@* ---------------- Search & filter ---------------- *@
+<div class="card app-card mb-3">
+    <div class="card-body">
+        <div class="row g-2 align-items-end">
+            <div class="col-12 col-lg-5">
+                <label class="form-label small text-muted" for="search">Search by title</label>
+                <input id="search" class="form-control" placeholder="Type a task title..."
+                       value="@_filter.Search"
+                       @oninput="OnSearchInput" />
+            </div>
+
+            <div class="col-6 col-lg-3">
+                <label class="form-label small text-muted" for="statusFilter">Status</label>
+                <select id="statusFilter" class="form-select"
+                        value="@_filter.Status" @onchange="OnStatusChanged">
+                    <option value="">All statuses</option>
+                    @foreach (var status in TaskStatuses.All)
+                    {
+                        <option value="@status">@TaskStatuses.ToDisplay(status)</option>
+                    }
+                </select>
+            </div>
+
+            <div class="col-6 col-lg-3">
+                <label class="form-label small text-muted" for="priorityFilter">Priority</label>
+                <select id="priorityFilter" class="form-select"
+                        value="@_filter.Priority" @onchange="OnPriorityChanged">
+                    <option value="">All priorities</option>
+                    @foreach (var priority in TaskPriorities.All)
+                    {
+                        <option value="@priority">@priority</option>
+                    }
+                </select>
+            </div>
+
+            <div class="col-12 col-lg-1 d-grid">
+                <button class="btn btn-outline-secondary" @onclick="ClearFilters"
+                        disabled="@(!_filter.HasAnyFilter)" title="Clear all filters">
+                    Clear
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@* ---------------- Results ---------------- *@
+<div class="card app-card">
+    <div class="card-header d-flex align-items-center justify-content-between">
+        <span class="fw-semibold">
+            @_tasks.Count @(_tasks.Count == 1 ? "task" : "tasks")
+            @if (_filter.HasAnyFilter)
+            {
+                <span class="text-muted fw-normal">(filtered)</span>
+            }
+        </span>
+        @if (_isLoading)
+        {
+            <span class="spinner-border spinner-border-sm text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </span>
+        }
+    </div>
+
+    @if (!_isLoading && _tasks.Count == 0)
+    {
+        <div class="card-body text-center text-muted py-5">
+            <div class="empty-glyph">&#9776;</div>
+            <p class="mb-1">No tasks match your search.</p>
+            @if (_filter.HasAnyFilter)
+            {
+                <button class="btn btn-sm btn-link" @onclick="ClearFilters">Clear the filters</button>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th scope="col">Task</th>
+                        @if (IsAdmin)
+                        {
+                            <th scope="col" class="d-none d-lg-table-cell">Assigned to</th>
+                        }
+                        <th scope="col">Priority</th>
+                        <th scope="col" style="min-width: 10rem;">Status</th>
+                        <th scope="col" class="d-none d-md-table-cell">Due date</th>
+                        <th scope="col" class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var task in _tasks)
+                    {
+                        <tr @key="task.TaskId">
+                            <td>
+                                <div class="fw-semibold">@task.Title</div>
+                                @if (!string.IsNullOrWhiteSpace(task.Description))
+                                {
+                                    <div class="small text-muted text-truncate" style="max-width: 26rem;">
+                                        @task.Description
+                                    </div>
+                                }
+                            </td>
+
+                            @if (IsAdmin)
+                            {
+                                <td class="d-none d-lg-table-cell">
+                                    @if (task.AssignedToName is null)
+                                    {
+                                        <span class="text-muted fst-italic">Unassigned</span>
+                                    }
+                                    else
+                                    {
+                                        @task.AssignedToName
+                                    }
+                                </td>
+                            }
+
+                            <td><PriorityBadge Priority="@task.Priority" /></td>
+
+                            <td>
+                                @* Both roles may change status; this is the only
+                                   edit an Employee is allowed. *@
+                                <select class="form-select form-select-sm"
+                                        value="@task.Status"
+                                        disabled="@(_busyTaskId == task.TaskId)"
+                                        @onchange="e => ChangeStatusAsync(task, e)">
+                                    @foreach (var status in TaskStatuses.All)
+                                    {
+                                        <option value="@status">@TaskStatuses.ToDisplay(status)</option>
+                                    }
+                                </select>
+                            </td>
+
+                            <td class="d-none d-md-table-cell">
+                                @if (task.DueDate is null)
+                                {
+                                    <span class="text-muted">&mdash;</span>
+                                }
+                                else
+                                {
+                                    <span class="@(task.IsOverdue ? "text-danger fw-semibold" : null)">
+                                        @task.DueDate.Value.ToString("dd MMM yyyy")
+                                    </span>
+                                    @if (task.IsOverdue)
+                                    {
+                                        <div class="small text-danger">Overdue</div>
+                                    }
+                                }
+                            </td>
+
+                            <td class="text-end">
+                                @if (IsAdmin)
+                                {
+                                    <div class="btn-group btn-group-sm">
+                                        <button class="btn btn-outline-secondary" @onclick="() => OpenEdit(task)">
+                                            Edit
+                                        </button>
+                                        <button class="btn btn-outline-danger" @onclick="() => AskDelete(task)">
+                                            Delete
+                                        </button>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <span class="text-muted small">&mdash;</span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
+
+@* ---------------- Create / edit dialog ---------------- *@
+@if (_editModel is not null)
+{
+    <TaskEditor Model="_editModel"
+                Employees="_employees"
+                IsSaving="_isSaving"
+                OnSave="SaveAsync"
+                OnCancel="() => _editModel = null" />
+}
+
+@* ---------------- Delete confirmation ---------------- *@
+@if (_pendingDelete is not null)
+{
+    <ConfirmDialog Title="Delete task"
+                   Message="@($"Delete \"{_pendingDelete.Title}\"? This cannot be undone.")"
+                   ConfirmText="Delete"
+                   ConfirmVariant="danger"
+                   IsBusy="_isSaving"
+                   OnConfirm="DeleteConfirmedAsync"
+                   OnCancel="() => _pendingDelete = null" />
+}
+
+@code {
+    private readonly TaskFilter _filter = new();
+    private List<TaskDto> _tasks = [];
+    private List<UserDto> _employees = [];
+
+    private TaskSaveRequest? _editModel;
+    private TaskDto? _pendingDelete;
+
+    private bool _isLoading = true;
+    private bool _isSaving;
+    private int? _busyTaskId;
+
+    private string? _errorMessage;
+    private string? _successMessage;
+
+    // Guards the debounced search so only the most recent keystroke queries.
+    private CancellationTokenSource? _searchDebounce;
+
+    protected override async Task OnAuthenticatedAsync()
+    {
+        if (IsAdmin)
+        {
+            try
+            {
+                _employees = await Api.GetEmployeesAsync();
+            }
+            catch (ApiException ex)
+            {
+                // Not fatal - the list still loads, only the assignee dropdown
+                // would be empty.
+                _errorMessage = $"Could not load the employee list: {ex.Message}";
+            }
+        }
+
+        await LoadTasksAsync();
+    }
+
+    // -- Search & filter -----------------------------------------------------
+
+    /// <summary>
+    /// Waits for a short pause in typing before querying, so a fast typist does
+    /// not fire a request per keystroke.
+    /// </summary>
+    private async Task OnSearchInput(ChangeEventArgs e)
+    {
+        _filter.Search = e.Value?.ToString();
+
+        _searchDebounce?.Cancel();
+        _searchDebounce?.Dispose();
+        _searchDebounce = new CancellationTokenSource();
+        var token = _searchDebounce.Token;
+
+        try
+        {
+            await Task.Delay(350, token);
+            await LoadTasksAsync();
+            StateHasChanged();
+        }
+        catch (TaskCanceledException)
+        {
+            // Superseded by a later keystroke.
+        }
+    }
+
+    private async Task OnStatusChanged(ChangeEventArgs e)
+    {
+        _filter.Status = AsFilterValue(e.Value);
+        await LoadTasksAsync();
+    }
+
+    private async Task OnPriorityChanged(ChangeEventArgs e)
+    {
+        _filter.Priority = AsFilterValue(e.Value);
+        await LoadTasksAsync();
+    }
+
+    private static string? AsFilterValue(object? value)
+    {
+        var text = value?.ToString();
+        return string.IsNullOrWhiteSpace(text) ? null : text;
+    }
+
+    private async Task ClearFilters()
+    {
+        _filter.Search = null;
+        _filter.Status = null;
+        _filter.Priority = null;
+        await LoadTasksAsync();
+    }
+
+    private async Task LoadTasksAsync()
+    {
+        _isLoading = true;
+
+        try
+        {
+            _tasks = await Api.GetTasksAsync(_filter);
+        }
+        catch (ApiException ex)
+        {
+            _errorMessage = ex.Message;
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    // -- Status change -------------------------------------------------------
+
+    private async Task ChangeStatusAsync(TaskDto task, ChangeEventArgs e)
+    {
+        var newStatus = e.Value?.ToString();
+        if (string.IsNullOrWhiteSpace(newStatus) || newStatus == task.Status)
+            return;
+
+        var previous = task.Status;
+        _busyTaskId = task.TaskId;
+
+        try
+        {
+            await Api.UpdateTaskStatusAsync(task.TaskId, newStatus);
+            task.Status = newStatus;
+            _successMessage = $"\"{task.Title}\" moved to {TaskStatuses.ToDisplay(newStatus)}.";
+            _errorMessage = null;
+        }
+        catch (ApiException ex)
+        {
+            // Put the dropdown back where it was so the UI keeps matching the
+            // server.
+            task.Status = previous;
+            _errorMessage = ex.Message;
+        }
+        finally
+        {
+            _busyTaskId = null;
+        }
+    }
+
+    // -- Create / edit -------------------------------------------------------
+
+    private void OpenCreate()
+    {
+        _successMessage = null;
+        _editModel = new TaskSaveRequest
+        {
+            Priority = TaskPriorities.Medium,
+            Status = TaskStatuses.Pending,
+            DueDate = DateTime.Today.AddDays(7)
+        };
+    }
+
+    private void OpenEdit(TaskDto task)
+    {
+        _successMessage = null;
+        _editModel = new TaskSaveRequest
+        {
+            TaskId = task.TaskId,
+            Title = task.Title,
+            Description = task.Description,
+            AssignedTo = task.AssignedTo,
+            Priority = task.Priority,
+            Status = task.Status,
+            DueDate = task.DueDate
+        };
+    }
+
+    private async Task SaveAsync(TaskSaveRequest model)
+    {
+        _isSaving = true;
+        _errorMessage = null;
+
+        try
+        {
+            if (model.TaskId == 0)
+            {
+                await Api.CreateTaskAsync(model);
+                _successMessage = $"\"{model.Title}\" was created.";
+            }
+            else
+            {
+                await Api.UpdateTaskAsync(model);
+                _successMessage = $"\"{model.Title}\" was updated.";
+            }
+
+            _editModel = null;
+            await LoadTasksAsync();
+        }
+        catch (ApiException ex)
+        {
+            _errorMessage = ex.Message;
+        }
+        finally
+        {
+            _isSaving = false;
+        }
+    }
+
+    // -- Delete --------------------------------------------------------------
+
+    private void AskDelete(TaskDto task)
+    {
+        _successMessage = null;
+        _pendingDelete = task;
+    }
+
+    private async Task DeleteConfirmedAsync()
+    {
+        if (_pendingDelete is null)
+            return;
+
+        _isSaving = true;
+
+        try
+        {
+            await Api.DeleteTaskAsync(_pendingDelete.TaskId);
+            _successMessage = $"\"{_pendingDelete.Title}\" was deleted.";
+            _errorMessage = null;
+            _pendingDelete = null;
+            await LoadTasksAsync();
+        }
+        catch (ApiException ex)
+        {
+            _errorMessage = ex.Message;
+            _pendingDelete = null;
+        }
+        finally
+        {
+            _isSaving = false;
+        }
+    }
+
+    public void Dispose()
+    {
+        _searchDebounce?.Cancel();
+        _searchDebounce?.Dispose();
+    }
+}
