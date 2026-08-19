@@ -13,7 +13,7 @@ can update their status.
 
 ## Quick start
 
-1. In SSMS run `CREATE DATABASE EmployeeTaskTrackerDb`, then open `database/setup.sql` and execute it.
+1. In SSMS run `CREATE DATABASE EmployeeTaskTrackerDb`, then open `database/setup.sql` in the visual studio and execute it.
 2. If your SQL Server instance is not `localhost\SQLEXPRESS`, edit the connection string in
    `src/EmployeeTaskTracker.Api/appsettings.json`.
 3. Open `EmployeeTaskTracker.sln`, pick **API + Web (both)** in the Start dropdown, press F5.
