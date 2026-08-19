@@ -5,22 +5,28 @@ namespace EmployeeTaskTracker.Web.Services;
 
 /// <summary>
 /// Holds the signed-in user's JWT for the lifetime of the Blazor circuit and
-/// mirrors it into the browser's local storage so a page refresh does not sign
-/// the user out.
+/// mirrors it into the browser's session storage so a page refresh does not
+/// sign the user out.
 ///
-/// ProtectedLocalStorage encrypts the value with the server's data-protection
-/// key, so the token is not readable by client-side script from another origin
-/// and cannot be tampered with.
+/// Session storage rather than local storage is deliberate. Local storage
+/// survives closing the browser, so the next visit would skip the login page
+/// entirely and land on the dashboard. Session storage is scoped to the browser
+/// tab: refreshing keeps you signed in, while a new tab or a restarted browser
+/// starts at the login page. That also means an abandoned session on a shared
+/// machine does not stay signed in indefinitely.
+///
+/// ProtectedSessionStorage encrypts the value with the server's data-protection
+/// key, so the token cannot be read or tampered with by client-side script.
 /// </summary>
 public sealed class TokenStore
 {
     private const string StorageKey = "employee-task-tracker.session";
 
-    private readonly ProtectedLocalStorage _localStorage;
+    private readonly ProtectedSessionStorage _sessionStorage;
     private LoginResponse? _session;
     private bool _loaded;
 
-    public TokenStore(ProtectedLocalStorage localStorage) => _localStorage = localStorage;
+    public TokenStore(ProtectedSessionStorage sessionStorage) => _sessionStorage = sessionStorage;
 
     /// <summary>Raised when the user signs in or out, so the UI can re-render.</summary>
     public event Action? SessionChanged;
@@ -36,7 +42,7 @@ public sealed class TokenStore
 
         try
         {
-            var result = await _localStorage.GetAsync<LoginResponse>(StorageKey);
+            var result = await _sessionStorage.GetAsync<LoginResponse>(StorageKey);
             _session = result.Success ? result.Value : null;
         }
         catch (Exception)
@@ -60,7 +66,7 @@ public sealed class TokenStore
     {
         _session = session;
         _loaded = true;
-        await _localStorage.SetAsync(StorageKey, session);
+        await _sessionStorage.SetAsync(StorageKey, session);
         SessionChanged?.Invoke();
     }
 
@@ -68,7 +74,7 @@ public sealed class TokenStore
     {
         _session = null;
         _loaded = true;
-        await _localStorage.DeleteAsync(StorageKey);
+        await _sessionStorage.DeleteAsync(StorageKey);
         SessionChanged?.Invoke();
     }
 

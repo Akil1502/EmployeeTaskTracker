@@ -202,6 +202,9 @@ in for you.
 Passwords are stored as PBKDF2-SHA256 hashes (100,000 iterations, per-user random salt). The plain
 password is never stored anywhere.
 
+The session is held in the browser's encrypted session storage, so refreshing the page keeps you
+signed in while a new tab or a restarted browser returns you to the login page.
+
 ---
 
 ## Features
