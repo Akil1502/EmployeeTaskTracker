@@ -96,7 +96,7 @@ Visual Studio can do all of this without SSMS installed.
 
 #### What the script does, and confirming it worked
 
-It creates both tables, all eleven stored procedures, the supporting indexes and the demo data. It is
+It creates both tables, all twelve stored procedures, the supporting indexes and the demo data. It is
 safe to run more than once: procedures are recreated every time, while tables and seed rows are only
 created if they are missing, so re-running it never destroys data you have entered.
 
@@ -109,7 +109,7 @@ SELECT (SELECT COUNT(*) FROM dbo.Users)      AS Users,
        (SELECT COUNT(*) FROM sys.procedures) AS Procedures;
 ```
 
-You should see **4 users, 8 tasks and 11 procedures**.
+You should see **5 users, 8 tasks and 12 procedures**.
 
 ### Step 5 — Point the application at your database
 
@@ -191,6 +191,7 @@ Every seeded account uses the password **`Password@123`**.
 | `arun@tasktracker.com` | Employee | Shortcut button |
 | `divya@tasktracker.com` | Employee | Type it in |
 | `karthik@tasktracker.com` | Employee | Type it in |
+| `akilprabhu2004@gmail.com` | Employee | Type it in |
 
 Running locally, the login page shows two shortcut buttons that fill the first two accounts in for
 you. **Those buttons only appear in the Development environment** — a deployed or Release build
@@ -284,7 +285,7 @@ EmployeeTaskTracker.sln
    Server=localhost\SQLEXPRESS;Database=EmployeeTaskTrackerDb;Trusted_Connection=True;TrustServerCertificate=True
    ```
 
-The script creates the `Users` and `Tasks` tables, all eleven stored procedures, supporting indexes,
+The script creates the `Users` and `Tasks` tables, all twelve stored procedures, supporting indexes,
 and seed data. It is safe to run more than once — procedures are recreated each time, while tables
 and seed rows are only created if they are missing.
 
@@ -389,7 +390,7 @@ If you change the API's port, update `ApiBaseUrl` in
 
 ## Demo accounts
 
-All four seeded accounts use the password **`Password@123`**.
+All five seeded accounts use the password **`Password@123`**.
 
 | Email | Role | Sees | Login page |
 |---|---|---|---|
@@ -397,6 +398,7 @@ All four seeded accounts use the password **`Password@123`**.
 | `arun@tasktracker.com` | Employee | Only their own tasks, status updates only | Shortcut button |
 | `divya@tasktracker.com` | Employee | Only their own tasks, status updates only | Type it in |
 | `karthik@tasktracker.com` | Employee | Only their own tasks, status updates only | Type it in |
+| `akilprabhu2004@gmail.com` | Employee | Only their own tasks, status updates only | Type it in |
 
 **The two shortcut buttons render only in the Development environment.** Running locally with F5 or
 `dotnet run` puts the application in Development, so they are there while you review it. A deployed
@@ -438,11 +440,83 @@ signed in while a new tab or a restarted browser returns you to the login page.
 - Overdue tasks are highlighted
 - Delete asks for confirmation first
 
+### Email notifications
+- When an Admin assigns a task, the employee it was assigned to is emailed
+- When anyone changes a task's status, every active Admin is emailed, naming who changed it and the
+  status it moved from and to
+- Reassigning a task notifies the new owner; editing a title or due date does not re-notify somebody
+  about work they already have, and re-selecting a status that is already set sends nothing
+- **Off by default.** Until it is configured, each notification is written to the API log instead of
+  being sent, so a fresh clone works without a mailbox. See
+  [Enabling email notifications](#enabling-email-notifications).
+
 ### Search and filter
 - Search by task title or by the name of the employee the task is assigned to, from the task page
   or the search box in the top bar
 - Filter by status and by priority, independently or together
 - Search is debounced so typing does not fire a request per keystroke
+
+---
+
+## Enabling email notifications
+
+Notifications are off out of the box. With no mailbox configured the API writes each one to its log,
+which is enough to see the feature working:
+
+```
+[email not sent - not configured] to=akilprabhu2004@gmail.com kind=task-assigned subject="New task assigned: ..."
+```
+
+To send real email, fill in the `Email` section of `src/EmployeeTaskTracker.Api/appsettings.json`:
+
+```json
+"Email": {
+  "Enabled": true,
+  "SmtpHost": "smtp.gmail.com",
+  "SmtpPort": 587,
+  "UseImplicitTls": false,
+  "FromAddress": "you@gmail.com",
+  "FromName": "Employee Task Tracker"
+}
+```
+
+### Supplying the credentials
+
+**Do not put the mailbox password in `appsettings.json`** — that file is committed. Use user secrets,
+which are stored outside the repository:
+
+```bash
+dotnet user-secrets set "Email:UserName" "you@gmail.com" --project src/EmployeeTaskTracker.Api
+```
+
+```bash
+dotnet user-secrets set "Email:Password" "your-app-password" --project src/EmployeeTaskTracker.Api
+```
+
+Environment variables work too, and are usually how a hosting platform supplies them:
+`Email__UserName` and `Email__Password`.
+
+### Using a Gmail account
+
+Gmail rejects your normal account password over SMTP. You need an **App Password**:
+
+1. Enable 2-Step Verification at <https://myaccount.google.com/security>.
+2. Go to <https://myaccount.google.com/apppasswords> and generate a password for "Mail".
+3. Use the 16-character value it gives you as `Email:Password`, and your Gmail address as both
+   `Email:UserName` and `Email:FromAddress`.
+
+Other providers work the same way — set `SmtpHost`, `SmtpPort`, and use `UseImplicitTls: true` if your
+provider wants implicit TLS on port 465 rather than STARTTLS on 587.
+
+### How it is built
+
+Sending runs on a background service fed by an in-memory queue, so a request never waits on an SMTP
+conversation. That matters because the specification asks for API responses inside two seconds and an
+SMTP round trip can easily exceed that — measured on this machine, creating a task and assigning it
+returns in about 120 ms while the email is still being delivered.
+
+A notification failure is logged and never propagates: an unreachable mail server must not stop
+somebody assigning work.
 
 ---
 
@@ -530,6 +604,7 @@ specification; every column the specification names is present with the type it 
 | `usp_User_GetByEmail` | Login lookup |
 | `usp_User_GetById` | Profile lookup |
 | `usp_User_GetEmployees` | Populates the assignee dropdown |
+| `usp_User_GetAdmins` | Recipients for the status-change notification |
 | `usp_Task_Search` | Task list with optional search, status, priority and assignee filters |
 | `usp_Task_GetById` | Single task |
 | `usp_Task_Insert` | Create |

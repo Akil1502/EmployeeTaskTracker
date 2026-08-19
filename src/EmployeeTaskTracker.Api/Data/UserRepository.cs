@@ -20,6 +20,7 @@ public interface IUserRepository
     Task<UserRecord?> GetByEmailAsync(string email, CancellationToken cancellationToken = default);
     Task<UserDto?> GetByIdAsync(int userId, CancellationToken cancellationToken = default);
     Task<IReadOnlyList<UserDto>> GetEmployeesAsync(CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<UserDto>> GetAdminsAsync(CancellationToken cancellationToken = default);
 }
 
 /// <summary>
@@ -70,20 +71,28 @@ public sealed class UserRepository : IUserRepository
         return await reader.ReadAsync(cancellationToken) ? MapUser(reader) : null;
     }
 
-    public async Task<IReadOnlyList<UserDto>> GetEmployeesAsync(CancellationToken cancellationToken = default)
+    public Task<IReadOnlyList<UserDto>> GetEmployeesAsync(CancellationToken cancellationToken = default)
+        => GetByProcedureAsync("dbo.usp_User_GetEmployees", cancellationToken);
+
+    /// <summary>Recipients for the status-change notification.</summary>
+    public Task<IReadOnlyList<UserDto>> GetAdminsAsync(CancellationToken cancellationToken = default)
+        => GetByProcedureAsync("dbo.usp_User_GetAdmins", cancellationToken);
+
+    private async Task<IReadOnlyList<UserDto>> GetByProcedureAsync(
+        string procedureName, CancellationToken cancellationToken)
     {
         await using var connection = await _connectionFactory.CreateOpenConnectionAsync(cancellationToken);
-        await using var command = new SqlCommand("dbo.usp_User_GetEmployees", connection)
+        await using var command = new SqlCommand(procedureName, connection)
         {
             CommandType = CommandType.StoredProcedure
         };
 
-        var employees = new List<UserDto>();
+        var users = new List<UserDto>();
         await using var reader = await command.ExecuteReaderAsync(cancellationToken);
         while (await reader.ReadAsync(cancellationToken))
-            employees.Add(MapUser(reader));
+            users.Add(MapUser(reader));
 
-        return employees;
+        return users;
     }
 
     private static UserDto MapUser(SqlDataReader reader) => new()

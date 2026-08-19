@@ -157,6 +157,31 @@ END
 GO
 
 -- ---------------------------------------------------------------------------
+-- usp_User_GetAdmins
+-- Recipients for the status-change notification. Returns every active Admin
+-- rather than assuming a single one, so adding a second administrator needs no
+-- code change.
+-- ---------------------------------------------------------------------------
+IF OBJECT_ID('dbo.usp_User_GetAdmins', 'P') IS NOT NULL
+    DROP PROCEDURE dbo.usp_User_GetAdmins;
+GO
+CREATE PROCEDURE dbo.usp_User_GetAdmins
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT  u.UserId,
+            u.Name,
+            u.Email,
+            u.Role
+    FROM    dbo.Users AS u
+    WHERE   u.Role = 'Admin'
+      AND   u.IsActive = 1
+    ORDER BY u.Name;
+END
+GO
+
+-- ---------------------------------------------------------------------------
 -- usp_User_GetById
 -- ---------------------------------------------------------------------------
 IF OBJECT_ID('dbo.usp_User_GetById', 'P') IS NOT NULL
@@ -500,9 +525,26 @@ BEGIN
         (N'Divya Ramesh',         N'divya@tasktracker.com',
             N'100000.q6b3Rj2UdsP9vf1/C9Tr+w==.u6lN/LdCcAPnxwftPBdmI6S65AtaUKFM+4BF3JLJ4mA=', N'Employee'),
         (N'Karthik Selvam',       N'karthik@tasktracker.com',
-            N'100000.v5sgElH33p5lKYD89CL16w==.fMxwDb8IsLlqRJXnHQ5jt9YYIShpT8QBb5y9n37dxJ8=', N'Employee');
+            N'100000.v5sgElH33p5lKYD89CL16w==.fMxwDb8IsLlqRJXnHQ5jt9YYIShpT8QBb5y9n37dxJ8=', N'Employee'),
+        (N'Akil',                 N'akilprabhu2004@gmail.com',
+            N'100000.CGC6dY3k4TFIhScu8H8iWw==.ceF3P57LDZyngh2WNsjn6Oc8fk5X3Tmr+d1UZuYJHdg=', N'Employee');
 
-    PRINT 'Seeded dbo.Users with 1 Admin and 3 Employee accounts.';
+    PRINT 'Seeded dbo.Users with 1 Admin and 4 Employee accounts.';
+END
+GO
+
+-- ---------------------------------------------------------------------------
+-- Added after the first release, so it is inserted separately: the seed block
+-- above only runs when the table is empty, and would be skipped on a database
+-- that already exists.
+-- ---------------------------------------------------------------------------
+IF NOT EXISTS (SELECT 1 FROM dbo.Users WHERE Email = N'akilprabhu2004@gmail.com')
+BEGIN
+    INSERT INTO dbo.Users (Name, Email, PasswordHash, Role)
+    VALUES (N'Akil', N'akilprabhu2004@gmail.com',
+            N'100000.CGC6dY3k4TFIhScu8H8iWw==.ceF3P57LDZyngh2WNsjn6Oc8fk5X3Tmr+d1UZuYJHdg=', N'Employee');
+
+    PRINT 'Added employee Akil.';
 END
 GO
 
@@ -560,5 +602,6 @@ PRINT '   admin@tasktracker.com     - Admin';
 PRINT '   arun@tasktracker.com      - Employee';
 PRINT '   divya@tasktracker.com     - Employee';
 PRINT '   karthik@tasktracker.com   - Employee';
+PRINT '   akilprabhu2004@gmail.com  - Employee';
 PRINT '================================================================';
 GO
