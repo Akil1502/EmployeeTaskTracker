@@ -1,0 +1,71 @@
+@* Proportion of tasks in each status, drawn as a donut.
+
+   Built from plain SVG arcs rather than a charting library: it is a handful of
+   circles, it inherits the theme colours, and it adds no dependency or script
+   to the page. Each segment is a circle whose dash pattern exposes only its own
+   share of the circumference, offset by everything drawn before it. *@
+
+<div class="donut">
+    <svg viewBox="0 0 120 120" class="donut-svg" role="img" aria-label="@AriaLabel">
+        <g transform="rotate(-90 60 60)">
+            @* Track behind the segments, visible when there is nothing to show. *@
+            <circle cx="60" cy="60" r="@Radius" class="donut-track" fill="none" stroke-width="@Thickness" />
+
+            @if (Total > 0)
+            {
+                var offset = 0d;
+
+                @foreach (var segment in Segments)
+                {
+                    var length = segment.Value / (double)Total * Circumference;
+
+                    <circle cx="60" cy="60" r="@Radius" fill="none"
+                            class="donut-seg donut-@segment.Key"
+                            stroke-width="@Thickness"
+                            stroke-dasharray="@Fmt(length) @Fmt(Circumference - length)"
+                            stroke-dashoffset="@Fmt(-offset)"
+                            stroke-linecap="butt" />
+
+                    offset += length;
+                }
+            }
+        </g>
+    </svg>
+
+    <div class="donut-centre">
+        <div class="donut-value">@Total</div>
+        <div class="donut-caption">@(Total == 1 ? "task" : "tasks")</div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public int Pending { get; set; }
+    [Parameter] public int InProgress { get; set; }
+    [Parameter] public int Completed { get; set; }
+
+    private const double Radius = 50;
+    private const double Thickness = 14;
+    private static readonly double Circumference = 2 * Math.PI * Radius;
+
+    private int Total => Pending + InProgress + Completed;
+
+    /// <summary>Drawn in workflow order so the ring reads pending to done.</summary>
+    private IEnumerable<KeyValuePair<string, int>> Segments =>
+    [
+        new("pending", Pending),
+        new("progress", InProgress),
+        new("done", Completed)
+    ];
+
+    private string AriaLabel =>
+        Total == 0
+            ? "No tasks to chart"
+            : $"{Total} tasks: {Pending} pending, {InProgress} in progress, {Completed} completed";
+
+    /// <summary>
+    /// Invariant formatting. SVG attributes must use a dot as the decimal
+    /// separator, and this machine's culture uses a comma in some formats.
+    /// </summary>
+    private static string Fmt(double value)
+        => value.ToString("0.###", System.Globalization.CultureInfo.InvariantCulture);
+}

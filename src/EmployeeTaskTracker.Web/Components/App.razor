@@ -10,9 +10,12 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <base href="/" />
+    @* All styling is global, in app.css. There are no .razor.css files, so no
+       CSS-isolation bundle is generated and linking one would only produce a
+       404 on every page load. Add the bundle link back if scoped styles are
+       ever introduced. *@
     <link rel="stylesheet" href="@Assets["lib/bootstrap/dist/css/bootstrap.min.css"]" />
     <link rel="stylesheet" href="@Assets["app.css"]" />
-    <link rel="stylesheet" href="@Assets["EmployeeTaskTracker.Web.styles.css"]" />
     <ImportMap />
     <link rel="icon" type="image/png" href="favicon.png" />
     <HeadOutlet @rendermode="RenderModeNoPrerender" />

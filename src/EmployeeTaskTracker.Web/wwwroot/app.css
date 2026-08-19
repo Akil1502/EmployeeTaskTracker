@@ -513,6 +513,25 @@ a:hover {
     transition: transform .22s cubic-bezier(.4, 0, .2, 1);
 }
 
+/* The same diagonal rules as the login panel, so the two dark surfaces read as
+   one design rather than two. */
+.app-sidebar::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image: repeating-linear-gradient(
+        -45deg,
+        rgba(255, 255, 255, .02) 0 1px,
+        transparent 1px 11px
+    );
+    pointer-events: none;
+}
+
+.app-sidebar > * {
+    position: relative;
+    z-index: 1;
+}
+
 .app-sidebar.expanded {
     transform: translateX(0);
 }
@@ -640,18 +659,95 @@ a:hover {
     border-radius: 2px;
 }
 
-.app-avatar {
-    width: 2.2rem;
-    height: 2.2rem;
+/* --------------------------------------------------------------------------
+   Avatars
+   -------------------------------------------------------------------------- */
+
+.avatar {
     border-radius: 8px;
-    background: var(--accent);
-    color: #fff;
-    display: grid;
+    display: inline-grid;
     place-items: center;
     font-weight: 600;
-    font-size: .78rem;
-    letter-spacing: .02em;
+    letter-spacing: .01em;
     flex: 0 0 auto;
+    line-height: 1;
+    user-select: none;
+}
+
+.avatar-sm { width: 1.6rem; height: 1.6rem; font-size: .62rem; border-radius: 6px; }
+.avatar-md { width: 2.2rem; height: 2.2rem; font-size: .78rem; }
+.avatar-lg { width: 2.75rem; height: 2.75rem; font-size: .92rem; border-radius: 10px; }
+
+/* Tints derived from the name, so a person keeps one colour everywhere. */
+.avatar-tone-0 { background: var(--surface-sunken); color: var(--ink-400); }
+.avatar-tone-1 { background: #dfeae6; color: #2f6f5e; }
+.avatar-tone-2 { background: #f6e4d9; color: #a4552f; }
+.avatar-tone-3 { background: #e2e5ec; color: #444d5c; }
+.avatar-tone-4 { background: #f3e7c9; color: #86641d; }
+.avatar-tone-5 { background: #e6e2ee; color: #574a72; }
+
+.assignee {
+    display: inline-flex;
+    align-items: center;
+    gap: .5rem;
+}
+
+/* Sidebar account block */
+
+.account {
+    display: flex;
+    align-items: center;
+    gap: .65rem;
+}
+
+.account-text {
+    min-width: 0;
+}
+
+.account-name {
+    color: #fff;
+    font-size: .85rem;
+    font-weight: 600;
+    line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.account-role {
+    font-size: .68rem;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--ink-500);
+    margin-top: .1rem;
+}
+
+/* Top bar breadcrumb */
+
+.crumbs {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    font-size: .85rem;
+}
+
+.crumb-root {
+    color: var(--ink-400);
+}
+
+.crumb-sep {
+    color: var(--line-strong);
+}
+
+.crumb-current {
+    color: var(--ink-900);
+    font-weight: 600;
+}
+
+.topbar-name {
+    font-size: .87rem;
+    font-weight: 600;
+    line-height: 1.15;
 }
 
 @media (min-width: 992px) {
@@ -825,33 +921,113 @@ a:hover {
 .stat-done .stat-dot { background: var(--ok); }
 .stat-high .stat-dot { background: var(--danger); }
 
-.breakdown {
+/* --------------------------------------------------------------------------
+   Status donut and its legend
+   -------------------------------------------------------------------------- */
+
+.donut {
+    position: relative;
+    width: 100%;
+    max-width: 11.5rem;
+    margin: .25rem auto 0;
+    aspect-ratio: 1;
+}
+
+.donut-svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+.donut-track {
+    stroke: var(--surface-sunken);
+}
+
+.donut-seg {
+    transition: stroke-dasharray .4s ease;
+}
+
+.donut-pending { stroke: var(--ink-300); }
+.donut-progress { stroke: #d9a441; }
+.donut-done { stroke: var(--accent); }
+
+.donut-centre {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-content: center;
+    text-align: center;
+    pointer-events: none;
+}
+
+.donut-value {
+    font-size: 1.9rem;
+    font-weight: 600;
+    letter-spacing: -.035em;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+}
+
+.donut-caption {
+    font-size: .68rem;
+    text-transform: uppercase;
+    letter-spacing: .1em;
+    color: var(--ink-400);
+    margin-top: .25rem;
+}
+
+.legend {
     margin: 0;
 }
 
-.breakdown > div {
+.legend > div {
     display: flex;
     justify-content: space-between;
-    align-items: baseline;
-    padding: .6rem 0;
+    align-items: center;
+    padding: .5rem 0;
     border-bottom: 1px solid var(--line);
 }
 
-.breakdown > div:last-child {
+.legend > div:last-child {
     border-bottom: 0;
-    padding-bottom: 0;
 }
 
-.breakdown dt {
+.legend dt {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
     font-weight: 500;
-    color: var(--ink-500);
-    font-size: .9rem;
+    color: var(--ink-600);
+    font-size: .89rem;
 }
 
-.breakdown dd {
+.legend dd {
     margin: 0;
     font-weight: 600;
     font-variant-numeric: tabular-nums;
+}
+
+.legend-dot {
+    width: .55rem;
+    height: .55rem;
+    border-radius: 2px;
+    flex: 0 0 auto;
+}
+
+.legend-pending { background: var(--ink-300); }
+.legend-progress { background: #d9a441; }
+.legend-done { background: var(--accent); }
+.legend-overdue { background: var(--danger); }
+
+.overdue-note {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    font-size: .84rem;
+    color: var(--danger);
+    background: var(--danger-soft);
+    border-radius: var(--radius);
+    padding: .5rem .7rem;
 }
 
 .progress {

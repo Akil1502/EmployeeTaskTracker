@@ -153,7 +153,10 @@
                                     }
                                     else
                                     {
-                                        @task.AssignedToName
+                                        <span class="assignee">
+                                            <Avatar Name="@task.AssignedToName" Size="sm" />
+                                            @task.AssignedToName
+                                        </span>
                                     }
                                 </td>
                             }

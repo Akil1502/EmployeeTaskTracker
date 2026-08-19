@@ -1,0 +1,52 @@
+@* Initials badge for a person. Used in the top bar, the sidebar account block
+   and the assignee column of the task tables.
+
+   The tint is derived from the name itself, so the same person is always the
+   same colour without anybody having to store one. *@
+
+<span class="avatar avatar-@Size avatar-tone-@Tone" title="@Name">
+    @Initials
+</span>
+
+@code {
+    /// <summary>Full name. Null or blank renders a neutral placeholder.</summary>
+    [Parameter] public string? Name { get; set; }
+
+    /// <summary>sm, md or lg.</summary>
+    [Parameter] public string Size { get; set; } = "md";
+
+    private string Initials
+    {
+        get
+        {
+            if (string.IsNullOrWhiteSpace(Name))
+                return "?";
+
+            var parts = Name.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+
+            return parts.Length == 1
+                ? parts[0][..1].ToUpperInvariant()
+                : $"{parts[0][0]}{parts[^1][0]}".ToUpperInvariant();
+        }
+    }
+
+    /// <summary>
+    /// A stable 1-5 bucket from the name's characters. Deterministic, so a
+    /// person keeps their colour across pages and page loads - unlike
+    /// string.GetHashCode, which is randomised per process in .NET Core.
+    /// </summary>
+    private int Tone
+    {
+        get
+        {
+            if (string.IsNullOrWhiteSpace(Name))
+                return 0;
+
+            var sum = 0;
+            foreach (var c in Name)
+                sum += c;
+
+            return sum % 5 + 1;
+        }
+    }
+}

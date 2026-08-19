@@ -1,4 +1,5 @@
 @inherits LayoutComponentBase
+@implements IDisposable
 @inject TokenStore TokenStore
 @inject NavigationManager Navigation
 
@@ -15,28 +16,27 @@
 
             <div class="app-main">
                 <header class="app-topbar">
-                    <button class="btn app-nav-toggle d-lg-none" type="button"
+                    <button class="btn app-nav-toggle d-lg-none me-3" type="button"
                             @onclick="ToggleNav" aria-label="Toggle navigation" aria-expanded="@_navExpanded">
                         <span class="app-nav-toggle-bar"></span>
                         <span class="app-nav-toggle-bar"></span>
                         <span class="app-nav-toggle-bar"></span>
                     </button>
 
-                    <div class="d-none d-lg-flex align-items-center gap-2">
-                        <BrandMark Size="20" />
-                        <span class="eyebrow">Employee Task Tracker</span>
-                    </div>
+                    @* Page context rather than the brand, which the sidebar
+                       already carries. *@
+                    <nav class="crumbs" aria-label="Breadcrumb">
+                        <span class="crumb-root">Workspace</span>
+                        <span class="crumb-sep" aria-hidden="true">/</span>
+                        <span class="crumb-current" aria-current="page">@PageName</span>
+                    </nav>
 
                     <div class="ms-auto d-flex align-items-center gap-3">
                         <div class="text-end d-none d-sm-block">
-                            <div class="fw-semibold lh-1" style="font-size:.9rem;">
-                                @context.User.Identity?.Name
-                            </div>
-                            <div class="eyebrow mt-1">@RoleLabel(context)</div>
+                            <div class="topbar-name">@context.User.Identity?.Name</div>
+                            <div class="eyebrow">@RoleLabel(context)</div>
                         </div>
-                        <div class="app-avatar" title="@context.User.Identity?.Name">
-                            @Initials(context.User.Identity?.Name)
-                        </div>
+                        <Avatar Name="@context.User.Identity?.Name" Size="md" />
                         <button class="btn btn-outline-secondary btn-sm" @onclick="SignOutAsync">
                             Sign out
                         </button>
@@ -58,6 +58,37 @@
 @code {
     private bool _navExpanded;
 
+    protected override void OnInitialized()
+        => Navigation.LocationChanged += OnLocationChanged;
+
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        // The breadcrumb is derived from the URL, so it has to re-render when
+        // the route changes.
+        CloseNav();
+        StateHasChanged();
+    }
+
+    /// <summary>Human-readable name for the current route.</summary>
+    private string PageName
+    {
+        get
+        {
+            var path = Navigation.ToBaseRelativePath(Navigation.Uri)
+                .Split('?')[0]
+                .Trim('/')
+                .ToLowerInvariant();
+
+            return path switch
+            {
+                "" or "dashboard" => "Dashboard",
+                "tasks" => "Tasks",
+                "not-found" => "Not found",
+                _ => "Page"
+            };
+        }
+    }
+
     private void ToggleNav() => _navExpanded = !_navExpanded;
 
     private void CloseNav() => _navExpanded = false;
@@ -71,16 +102,5 @@
     private static string RoleLabel(AuthenticationState state)
         => state.User.IsInRole(Roles.Admin) ? "Administrator" : "Employee";
 
-    /// <summary>"Arun Kumar" becomes "AK", for the avatar circle.</summary>
-    private static string Initials(string? name)
-    {
-        if (string.IsNullOrWhiteSpace(name))
-            return "?";
-
-        var parts = name.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-
-        return parts.Length == 1
-            ? parts[0][..1].ToUpperInvariant()
-            : $"{parts[0][0]}{parts[^1][0]}".ToUpperInvariant();
-    }
+    public void Dispose() => Navigation.LocationChanged -= OnLocationChanged;
 }
