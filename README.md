@@ -94,6 +94,47 @@ The script creates the `Users` and `Tasks` tables, all eleven stored procedures,
 and seed data. It is safe to run more than once — procedures are recreated each time, while tables
 and seed rows are only created if they are missing.
 
+### If the default connection string does not work
+
+The value shipped in `appsettings.json` assumes a SQL Server **Express** instance named `SQLEXPRESS`
+on the local machine. That is the most common setup, but not the only one. Replace
+`ConnectionStrings:DefaultConnection` in `src/EmployeeTaskTracker.Api/appsettings.json` with whichever
+line below matches your machine.
+
+**To find your instance name:** it is the exact text in the *Server name* box when you connect in
+SSMS. You can also run `SELECT @@SERVERNAME` in any query window.
+
+| Your setup | Connection string |
+|---|---|
+| SQL Server Express (default, shipped) | `Server=localhost\SQLEXPRESS;Database=EmployeeTaskTrackerDb;Trusted_Connection=True;TrustServerCertificate=True;Encrypt=False` |
+| Default instance (no instance name) | `Server=localhost;Database=EmployeeTaskTrackerDb;Trusted_Connection=True;TrustServerCertificate=True;Encrypt=False` |
+| LocalDB (ships with Visual Studio) | `Server=(localdb)\MSSQLLocalDB;Database=EmployeeTaskTrackerDb;Trusted_Connection=True;TrustServerCertificate=True` |
+| A named instance | `Server=YOUR-PC\YOUR-INSTANCE;Database=EmployeeTaskTrackerDb;Trusted_Connection=True;TrustServerCertificate=True;Encrypt=False` |
+| SQL Server authentication instead of Windows | `Server=localhost\SQLEXPRESS;Database=EmployeeTaskTrackerDb;User Id=sa;Password=YOUR_PASSWORD;TrustServerCertificate=True;Encrypt=False` |
+| A remote or hosted server | `Server=your.server.address,1433;Database=EmployeeTaskTrackerDb;User Id=YOUR_USER;Password=YOUR_PASSWORD;TrustServerCertificate=True` |
+
+Notes on the individual settings:
+
+- **`Trusted_Connection=True`** uses your Windows account. Swap it for `User Id=...;Password=...` if
+  your server uses SQL Server authentication.
+- **`TrustServerCertificate=True`** accepts the server's self-signed certificate. It is appropriate
+  for a local development instance and should not be used against a production server.
+- **`Encrypt=False`** skips TLS negotiation. It is included because `Microsoft.Data.SqlClient` 4.0 and
+  later default to `Encrypt=True`, which can fail against older servers that predate TLS 1.2. If your
+  server negotiates TLS happily you can drop it; it is a safe default either way.
+- **`Database=`** must match the database you created in step 3 and the `USE [...]` line at the top of
+  `setup.sql`. If you prefer a different name, change it in all three places.
+
+> **The database has to exist on the instance the connection string points at.** Changing the server
+> in `appsettings.json` does not move the data. If you switch from `SQLEXPRESS` to LocalDB, for
+> example, you must run `CREATE DATABASE` and `setup.sql` again against LocalDB — otherwise the API
+> reports *Cannot open database "EmployeeTaskTrackerDb" requested by the login*, which means it
+> reached the server but the database is not there.
+
+If the API starts but every page reports *"The database is unavailable"*, the connection string is
+almost always the cause. Confirm you can connect to the same instance in SSMS using the same
+credentials, and that `EmployeeTaskTrackerDb` is listed under that instance.
+
 > **Compatibility note.** `setup.sql` is written against the SQL Server 2008 T-SQL feature set, so it
 > runs unchanged on SQL Server 2008 through 2022 and on Azure SQL Database. It deliberately avoids
 > `THROW`, `OFFSET/FETCH`, `IIF`, `CONCAT`, `FORMAT` and `TRY_CONVERT`, which all require SQL Server
