@@ -34,21 +34,26 @@
 else if (_data is not null)
 {
     @* ---- The four summary cards required by the specification ---- *@
+    @* Each card links into the task list with the matching filter applied. *@
     <div class="row g-3 mb-4">
         <div class="col-6 col-xl-3">
             <StatCard Label="Total Tasks" Value="@_data.Stats.TotalTasks" Variant="total"
-                      Note="@($"{_data.Stats.CompletionPercent}% complete")" />
+                      Note="@($"{_data.Stats.CompletionPercent}% complete")"
+                      Href="/tasks" />
         </div>
         <div class="col-6 col-xl-3">
             <StatCard Label="Pending" Value="@_data.Stats.PendingTasks" Variant="pending"
-                      Note="@($"{_data.Stats.InProgressTasks} in progress")" />
+                      Note="@($"{_data.Stats.InProgressTasks} in progress")"
+                      Href="@($"/tasks?status={TaskStatuses.Pending}")" />
         </div>
         <div class="col-6 col-xl-3">
-            <StatCard Label="Completed" Value="@_data.Stats.CompletedTasks" Variant="done" />
+            <StatCard Label="Completed" Value="@_data.Stats.CompletedTasks" Variant="done"
+                      Href="@($"/tasks?status={TaskStatuses.Completed}")" />
         </div>
         <div class="col-6 col-xl-3">
             <StatCard Label="High Priority" Value="@_data.Stats.HighPriorityTasks" Variant="high"
-                      Note="@OverdueNote" />
+                      Note="@OverdueNote"
+                      Href="@($"/tasks?priority={TaskPriorities.High}")" />
         </div>
     </div>
 

@@ -722,6 +722,56 @@ a:hover {
     position: relative;
 }
 
+/* Clickable variant: the whole card is an anchor into the filtered task list. */
+.stat-card-link {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+    transition: border-color .14s ease, box-shadow .14s ease, transform .14s ease;
+}
+
+.stat-card-link:hover {
+    color: inherit;
+    border-color: var(--accent);
+    box-shadow: 0 1px 2px rgba(18, 21, 26, .04), 0 10px 26px -12px rgba(47, 111, 94, .35);
+    transform: translateY(-1px);
+}
+
+.stat-card-link:focus-visible {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+/* "View →" affordance, revealed on hover and whenever the card has focus. */
+.stat-go {
+    display: inline-flex;
+    align-items: center;
+    gap: .25rem;
+    margin-top: .55rem;
+    font-size: .73rem;
+    font-weight: 600;
+    letter-spacing: .02em;
+    color: var(--accent);
+    opacity: 0;
+    transform: translateX(-2px);
+    transition: opacity .14s ease, transform .14s ease;
+}
+
+.stat-card-link:hover .stat-go,
+.stat-card-link:focus-visible .stat-go {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+/* Touch devices have no hover, so keep the affordance permanently visible. */
+@media (hover: none) {
+    .stat-go {
+        opacity: 1;
+        transform: none;
+    }
+}
+
 .stat-head {
     display: flex;
     align-items: center;

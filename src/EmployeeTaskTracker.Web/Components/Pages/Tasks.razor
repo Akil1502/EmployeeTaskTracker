@@ -239,6 +239,11 @@
 }
 
 @code {
+    // Set when arriving from a dashboard card, e.g. /tasks?status=Pending.
+    [SupplyParameterFromQuery(Name = "status")] private string? StatusQuery { get; set; }
+    [SupplyParameterFromQuery(Name = "priority")] private string? PriorityQuery { get; set; }
+    [SupplyParameterFromQuery(Name = "search")] private string? SearchQuery { get; set; }
+
     private readonly TaskFilter _filter = new();
     private List<TaskDto> _tasks = [];
     private List<UserDto> _employees = [];
@@ -258,6 +263,8 @@
 
     protected override async Task OnAuthenticatedAsync()
     {
+        ApplyQueryStringFilters();
+
         if (IsAdmin)
         {
             try
@@ -273,6 +280,30 @@
         }
 
         await LoadTasksAsync();
+    }
+
+    /// <summary>
+    /// Seeds the filter from the query string so a dashboard card can deep-link
+    /// into a filtered view. Unrecognised values are ignored rather than passed
+    /// through, so a hand-edited URL cannot put the page into a state the API
+    /// will reject.
+    /// </summary>
+    private void ApplyQueryStringFilters()
+    {
+        if (!string.IsNullOrWhiteSpace(StatusQuery)
+            && TaskStatuses.All.Contains(StatusQuery, StringComparer.OrdinalIgnoreCase))
+        {
+            _filter.Status = TaskStatuses.All.First(s => s.Equals(StatusQuery, StringComparison.OrdinalIgnoreCase));
+        }
+
+        if (!string.IsNullOrWhiteSpace(PriorityQuery)
+            && TaskPriorities.All.Contains(PriorityQuery, StringComparer.OrdinalIgnoreCase))
+        {
+            _filter.Priority = TaskPriorities.All.First(p => p.Equals(PriorityQuery, StringComparison.OrdinalIgnoreCase));
+        }
+
+        if (!string.IsNullOrWhiteSpace(SearchQuery))
+            _filter.Search = SearchQuery.Trim();
     }
 
     // -- Search & filter -----------------------------------------------------

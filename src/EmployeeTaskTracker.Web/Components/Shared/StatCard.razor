@@ -1,17 +1,24 @@
 @* One dashboard summary figure. The number leads; the label sits above it in
-   small caps so the eye lands on the value first. *@
+   small caps so the eye lands on the value first.
 
-<div class="stat-card stat-@Variant">
-    <div class="stat-head">
-        <span class="stat-label">@Label</span>
-        <span class="stat-dot" aria-hidden="true"></span>
+   When Href is supplied the whole card becomes a link into the task list with
+   the matching filter already applied. It renders as a real anchor rather than
+   a div with a click handler, so it is reachable by keyboard, works with
+   middle-click and "open in new tab", and is announced correctly by a screen
+   reader. *@
+
+@if (string.IsNullOrWhiteSpace(Href))
+{
+    <div class="stat-card stat-@Variant">
+        @Content
     </div>
-    <div class="stat-value">@Value</div>
-    @if (!string.IsNullOrWhiteSpace(Note))
-    {
-        <div class="stat-note">@Note</div>
-    }
-</div>
+}
+else
+{
+    <a class="stat-card stat-@Variant stat-card-link" href="@Href" aria-label="@AriaLabel">
+        @Content
+    </a>
+}
 
 @code {
     [Parameter, EditorRequired] public string Label { get; set; } = string.Empty;
@@ -22,4 +29,31 @@
 
     /// <summary>Optional supporting line under the number.</summary>
     [Parameter] public string? Note { get; set; }
+
+    /// <summary>When set, the card links here instead of rendering inert.</summary>
+    [Parameter] public string? Href { get; set; }
+
+    private string AriaLabel => $"{Label}: {Value}. View these tasks.";
+
+    private RenderFragment Content => @<text>
+        <div class="stat-head">
+            <span class="stat-label">@Label</span>
+            <span class="stat-dot" aria-hidden="true"></span>
+        </div>
+        <div class="stat-value">@Value</div>
+        @if (!string.IsNullOrWhiteSpace(Note))
+        {
+            <div class="stat-note">@Note</div>
+        }
+        @if (!string.IsNullOrWhiteSpace(Href))
+        {
+            <span class="stat-go" aria-hidden="true">
+                View
+                <svg width="11" height="11" viewBox="0 0 16 16" fill="none">
+                    <path d="M3 8h9M8.5 4l4 4-4 4" stroke="currentColor" stroke-width="1.6"
+                          stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+            </span>
+        }
+    </text>;
 }
