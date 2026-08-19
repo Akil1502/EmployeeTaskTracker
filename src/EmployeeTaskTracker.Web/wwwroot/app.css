@@ -485,11 +485,18 @@ a:hover {
     flex-direction: column;
 }
 
+/* The cap used to be 96rem with no centring, which stranded a strip of empty
+   space against the right edge on any screen wider than that - the content hugged
+   the left and the gap sat on one side, which reads as a mistake rather than as
+   margin. The cap is now high enough that ordinary desktop widths fill
+   completely, and auto margins keep the remainder symmetric on the very wide
+   screens where it still applies. */
 .app-content {
     padding: 1.75rem 1.5rem 3rem;
     flex: 1 1 auto;
-    max-width: 96rem;
     width: 100%;
+    max-width: 120rem;
+    margin-inline: auto;
 }
 
 .app-topbar {
