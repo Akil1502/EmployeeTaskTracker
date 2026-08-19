@@ -761,7 +761,8 @@ a:hover {
     letter-spacing: .08em;
     text-transform: uppercase;
     color: var(--ink-500);
-    margin-top: .1rem;
+    line-height: 1.3;
+    margin-top: 2px;
 }
 
 /* Top bar breadcrumb */
@@ -916,6 +917,18 @@ a:hover {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+}
+
+/* Both lines had line-heights that hugged the glyphs, leaving the name and the
+   role touching with no gap at all. The uppercase, letter-spaced role made that
+   read tighter still. */
+.account-trigger-text .topbar-name {
+    line-height: 1.25;
+}
+
+.account-trigger-text .eyebrow {
+    line-height: 1.3;
+    margin-top: 2px;
 }
 
 .account-chevron {
