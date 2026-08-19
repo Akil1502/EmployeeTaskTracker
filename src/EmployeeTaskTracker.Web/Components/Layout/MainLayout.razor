@@ -2,6 +2,7 @@
 @implements IDisposable
 @inject TokenStore TokenStore
 @inject NavigationManager Navigation
+@inject AuthenticationStateProvider AuthenticationStateProvider
 
 @* The login page renders bare, so the application chrome below only appears
    once somebody is signed in. *@
@@ -120,7 +121,12 @@
     private string? _searchTerm;
 
     protected override void OnInitialized()
-        => Navigation.LocationChanged += OnLocationChanged;
+    {
+        Navigation.LocationChanged += OnLocationChanged;
+        AuthenticationStateProvider.AuthenticationStateChanged += OnAuthenticationStateChanged;
+
+        SyncSearchFromUrl();
+    }
 
     private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
     {
@@ -128,7 +134,34 @@
         // the route changes. Any open overlay is dismissed at the same time.
         CloseNav();
         _accountMenuOpen = false;
+        SyncSearchFromUrl();
         StateHasChanged();
+    }
+
+    /// <summary>
+    /// Signing out does not tear down the Blazor circuit, so this layout - and
+    /// every field on it - outlives the session. Clearing the box here stops one
+    /// person's search term being visible to whoever signs in next.
+    /// </summary>
+    private void OnAuthenticationStateChanged(Task<AuthenticationState> state)
+    {
+        _searchTerm = null;
+        _accountMenuOpen = false;
+        InvokeAsync(StateHasChanged);
+    }
+
+    /// <summary>
+    /// Keeps the box showing whatever the current URL is filtered by, so it
+    /// reflects the visible results rather than holding state of its own.
+    /// </summary>
+    private void SyncSearchFromUrl()
+    {
+        var query = Microsoft.AspNetCore.WebUtilities.QueryHelpers
+            .ParseQuery(Navigation.ToAbsoluteUri(Navigation.Uri).Query);
+
+        _searchTerm = query.TryGetValue("search", out var value)
+            ? value.ToString()
+            : null;
     }
 
     private async Task OnSearchKeyDown(KeyboardEventArgs e)
@@ -176,6 +209,8 @@
     private async Task SignOutAsync()
     {
         _accountMenuOpen = false;
+        _searchTerm = null;
+
         await TokenStore.ClearAsync();
         Navigation.NavigateTo("/login", replace: true);
     }
@@ -186,5 +221,9 @@
     private static string EmailOf(AuthenticationState state)
         => state.User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value ?? string.Empty;
 
-    public void Dispose() => Navigation.LocationChanged -= OnLocationChanged;
+    public void Dispose()
+    {
+        Navigation.LocationChanged -= OnLocationChanged;
+        AuthenticationStateProvider.AuthenticationStateChanged -= OnAuthenticationStateChanged;
+    }
 }
