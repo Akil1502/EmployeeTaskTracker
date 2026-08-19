@@ -11,18 +11,142 @@ can update their status.
 
 ---
 
-## Quick start
+## Getting started
 
-1. In SSMS run `CREATE DATABASE EmployeeTaskTrackerDb`, then open `database/setup.sql` in the visual studio and execute it.
-2. If your SQL Server instance is not `localhost\SQLEXPRESS`, edit the connection string in
-   `src/EmployeeTaskTracker.Api/appsettings.json`.
-3. Open `EmployeeTaskTracker.sln`, pick **API + Web (both)** in the Start dropdown, press F5.
-4. Sign in as `admin@tasktracker.com` / `Password@123`.
+From a clean machine to a running application. Allow about ten minutes, most of it installing
+prerequisites you may already have.
 
-**Both projects have to run — the Blazor UI and the Web API are separate applications.** The Start
-dropdown on the toolbar has an **API + Web (both)** profile that starts them together; select it
-rather than pressing F5 on a single project. Full detail is in
-[Running the application](#running-the-application) below.
+> **The one thing to know up front:** this is two applications, not one. The Blazor UI calls a
+> separate Web API over HTTP, so **both projects must be running**. Step 6 covers how to start them
+> together.
+
+### Step 1 — Check what you already have
+
+Open a terminal and run:
+
+```bash
+dotnet --list-sdks
+```
+
+You need a **9.0.x** entry. If the command is not recognised, or no 9.0 line appears, install the
+[.NET 9 SDK](https://dotnet.microsoft.com/download/dotnet/9.0).
+
+You also need **SQL Server** (Express edition is fine) and a way to run a `.sql` script against it —
+either [SQL Server Management Studio](https://learn.microsoft.com/sql/ssms/download-sql-server-management-studio-ssms)
+or the SQL Server Object Explorer built into Visual Studio.
+
+Visual Studio is optional. The solution builds and runs entirely from the command line, but if you
+use it, **Visual Studio 2022 version 17.12 or later, or Visual Studio 2026**. The project targets
+.NET 9, which older 17.x releases cannot open.
+
+### Step 2 — Get the code
+
+```bash
+git clone https://github.com/Akil1502/EmployeeTaskTracker.git
+```
+
+Or download the ZIP from the green **Code** button on GitHub and extract it.
+
+### Step 3 — Find your SQL Server instance name
+
+You need this for the next two steps. Open SSMS: the value in the **Server name** box on the connect
+dialog is your instance name — commonly `localhost\SQLEXPRESS`, sometimes just `localhost` or
+`(localdb)\MSSQLLocalDB`.
+
+If you would rather ask the server, run this in any query window:
+
+```sql
+SELECT @@SERVERNAME;
+```
+
+### Step 4 — Create the database and run the script
+
+Connect to your instance, then run:
+
+```sql
+CREATE DATABASE EmployeeTaskTrackerDb;
+```
+
+Now open `database/setup.sql` from the cloned folder and execute it (**F5** in SSMS). Check that the
+`USE [EmployeeTaskTrackerDb]` line at the top matches the database you just created.
+
+The script creates both tables, all eleven stored procedures, the supporting indexes and the demo
+data. It is safe to run more than once: procedures are recreated every time, while tables and seed
+rows are only created if they are missing, so re-running it never destroys data you have entered.
+
+**Confirm it worked** by running this in the same query window:
+
+```sql
+USE EmployeeTaskTrackerDb;
+SELECT (SELECT COUNT(*) FROM dbo.Users)      AS Users,
+       (SELECT COUNT(*) FROM dbo.Tasks)      AS Tasks,
+       (SELECT COUNT(*) FROM sys.procedures) AS Procedures;
+```
+
+You should see **4 users, 8 tasks and 11 procedures**.
+
+> **Using Visual Studio instead of SSMS?** Open **View → SQL Server Object Explorer**, connect to
+> your instance, right-click **Databases → Add New Database** and name it `EmployeeTaskTrackerDb`.
+> Then open `database/setup.sql`, and use the toolbar to point it at that database before executing.
+
+### Step 5 — Point the application at your database
+
+Open `src/EmployeeTaskTracker.Api/appsettings.json`. It ships with:
+
+```
+Server=localhost\SQLEXPRESS;Database=EmployeeTaskTrackerDb;Trusted_Connection=True;TrustServerCertificate=True;Encrypt=False
+```
+
+**If your instance is `localhost\SQLEXPRESS`, skip this step.** Otherwise replace the `Server=` part
+with the name from step 3. Ready-made strings for a default instance, LocalDB, SQL Server
+authentication and a remote server are in
+[If the default connection string does not work](#if-the-default-connection-string-does-not-work).
+
+### Step 6 — Run both projects
+
+**From Visual Studio:** open `EmployeeTaskTracker.sln`, choose **API + Web (both)** in the Start
+dropdown on the toolbar, and press **F5**. The solution ships with that launch profile, so no setup
+is needed. If your Visual Studio does not show it, see
+[Running the application](#running-the-application) for the manual equivalent.
+
+**From the command line:** open two terminals and run one in each.
+
+```bash
+dotnet run --project src/EmployeeTaskTracker.Api
+```
+
+```bash
+dotnet run --project src/EmployeeTaskTracker.Web
+```
+
+Then browse to <http://localhost:5250>.
+
+### Step 7 — Sign in
+
+| Email | Password | Role |
+|---|---|---|
+| `admin@tasktracker.com` | `Password@123` | Admin |
+| `arun@tasktracker.com` | `Password@123` | Employee |
+
+The login page has buttons that fill either account in for you.
+
+### Step 8 — Worth trying
+
+A short tour that exercises everything the specification asks for:
+
+1. **Sign in as the admin.** The dashboard shows organisation-wide figures.
+2. **Click a summary card** — say *High Priority*. It opens the task list already filtered.
+3. **Add a task** from Task Management, assign it to an employee and give it a due date.
+4. **Search a person's name** in the top bar, press Enter. Search matches task titles and assignees.
+5. **Filter** by status and priority together, then clear the filters.
+6. **Edit and delete** the task you created. Deleting asks for confirmation.
+7. **Sign out and sign in as `arun@tasktracker.com`.** Note that the dashboard now counts only his
+   work, the task list shows only his tasks, and the add, edit and delete controls are gone — he can
+   change status and nothing else.
+8. **Open <http://localhost:5080/swagger>** to exercise the Web API directly. Paste the token from
+   `POST /api/auth/login` into the **Authorize** box to call the secured endpoints.
+
+If anything does not work, [Troubleshooting](#troubleshooting) covers the common causes.
 
 ---
 
