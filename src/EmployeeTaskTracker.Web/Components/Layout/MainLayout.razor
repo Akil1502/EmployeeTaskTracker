@@ -16,8 +16,13 @@
 
             <div class="app-main">
                 <header class="app-topbar">
+                    @* aria-expanded is spelled out rather than bound to the bool
+                       directly: Blazor treats a bool attribute like "disabled"
+                       and renders it valueless, which is not a valid value for
+                       this attribute and would not match a CSS selector. *@
                     <button class="btn app-nav-toggle d-lg-none me-2" type="button"
-                            @onclick="ToggleNav" aria-label="Toggle navigation" aria-expanded="@_navExpanded">
+                            @onclick="ToggleNav" aria-label="Toggle navigation"
+                            aria-expanded="@(_navExpanded ? "true" : "false")">
                         <span class="app-nav-toggle-bar"></span>
                         <span class="app-nav-toggle-bar"></span>
                         <span class="app-nav-toggle-bar"></span>
@@ -40,8 +45,9 @@
                             <path d="M10.6 10.6L14 14" stroke="currentColor" stroke-width="1.5"
                                   stroke-linecap="round" />
                         </svg>
-                        <input type="search" class="topbar-search-input" placeholder="Search tasks"
-                               aria-label="Search tasks by title"
+                        <input type="search" class="topbar-search-input"
+                               placeholder="Search tasks or people"
+                               aria-label="Search tasks by title or assigned employee"
                                value="@_searchTerm"
                                @oninput="e => _searchTerm = e.Value?.ToString()"
                                @onkeydown="OnSearchKeyDown" />
@@ -51,7 +57,8 @@
                     <div class="topbar-actions">
                         <div class="account-menu">
                             <button class="account-trigger" type="button" @onclick="ToggleAccountMenu"
-                                    aria-haspopup="true" aria-expanded="@_accountMenuOpen">
+                                    aria-haspopup="true"
+                                    aria-expanded="@(_accountMenuOpen ? "true" : "false")">
                                 <Avatar Name="@context.User.Identity?.Name" Size="md" />
                                 <span class="account-trigger-text d-none d-lg-block">
                                     <span class="topbar-name">@context.User.Identity?.Name</span>

@@ -231,7 +231,8 @@ signed in while a new tab or a restarted browser returns you to the login page.
 - Delete asks for confirmation first
 
 ### Search and filter
-- Search by task title
+- Search by task title or by the name of the employee the task is assigned to, from the task page
+  or the search box in the top bar
 - Filter by status and by priority, independently or together
 - Search is debounced so typing does not fire a request per keystroke
 

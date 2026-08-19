@@ -190,9 +190,13 @@ GO
 -- Backs the Task Management grid. Every filter argument is optional: passing
 -- NULL means "do not filter on this column".
 --
+-- @Search matches either the task title or the name of the employee it is
+-- assigned to, so one box finds "safety audit" and "Divya" alike.
+--
 -- @AssignedTo is how role-based visibility is enforced - the API passes the
 -- caller's own UserId when that caller is an Employee, so an Employee can only
--- ever read their own tasks.
+-- ever read their own tasks. It is applied independently of @Search, so
+-- searching for a colleague's name cannot widen what an Employee can see.
 --
 -- OPTION (RECOMPILE) keeps the optional-parameter pattern from reusing a plan
 -- built for a different combination of filters.
@@ -224,7 +228,9 @@ BEGIN
     FROM    dbo.Tasks AS t
             LEFT JOIN dbo.Users AS a ON a.UserId = t.AssignedTo
             LEFT JOIN dbo.Users AS c ON c.UserId = t.CreatedBy
-    WHERE   (@Search     IS NULL OR t.Title LIKE '%' + @Search + '%')
+    WHERE   (@Search     IS NULL
+             OR t.Title LIKE '%' + @Search + '%'
+             OR a.Name  LIKE '%' + @Search + '%')
       AND   (@Status     IS NULL OR t.Status = @Status)
       AND   (@Priority   IS NULL OR t.Priority = @Priority)
       AND   (@AssignedTo IS NULL OR t.AssignedTo = @AssignedTo)
