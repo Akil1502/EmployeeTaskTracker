@@ -5,11 +5,11 @@ VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{827E0CD3-B72D-47B6-A68D-7590B98EB39B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EmployeeTaskTracker.Shared", "src\EmployeeTaskTracker.Shared\EmployeeTaskTracker.Shared.csproj", "{0371EEC3-A4A2-4214-975C-D420E2AFA137}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EmployeeTaskTracker.Api", "src\EmployeeTaskTracker.Api\EmployeeTaskTracker.Api.csproj", "{D405FE51-9D72-4720-A9F9-C0E551CF7D81}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EmployeeTaskTracker.Web", "src\EmployeeTaskTracker.Web\EmployeeTaskTracker.Web.csproj", "{F805BABE-30A0-48A6-908B-BBE51173E7C0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EmployeeTaskTracker.Shared", "src\EmployeeTaskTracker.Shared\EmployeeTaskTracker.Shared.csproj", "{0371EEC3-A4A2-4214-975C-D420E2AFA137}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "database", "database", "{A1B2C3D4-0001-4E5F-9A8B-000000000001}"
 	ProjectSection(SolutionItems) = preProject

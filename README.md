@@ -11,6 +11,21 @@ can update their status.
 
 ---
 
+## Quick start
+
+1. In SSMS run `CREATE DATABASE EmployeeTaskTrackerDb`, then open `database/setup.sql` and execute it.
+2. If your SQL Server instance is not `localhost\SQLEXPRESS`, edit the connection string in
+   `src/EmployeeTaskTracker.Api/appsettings.json`.
+3. Open `EmployeeTaskTracker.sln`, pick **API + Web (both)** in the Start dropdown, press F5.
+4. Sign in as `admin@tasktracker.com` / `Password@123`.
+
+**Both projects have to run — the Blazor UI and the Web API are separate applications.** The Start
+dropdown on the toolbar has an **API + Web (both)** profile that starts them together; select it
+rather than pressing F5 on a single project. Full detail is in
+[Running the application](#running-the-application) below.
+
+---
+
 ## Technology stack
 
 | Layer | Choice |
