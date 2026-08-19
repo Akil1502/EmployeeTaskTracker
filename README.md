@@ -126,12 +126,50 @@ authentication and a remote server are in
 
 ### Step 6 — Run both projects
 
-**From Visual Studio:** open `EmployeeTaskTracker.sln`, choose **API + Web (both)** in the Start
-dropdown on the toolbar, and press **F5**. The solution ships with that launch profile, so no setup
-is needed. If your Visual Studio does not show it, see
-[Running the application](#running-the-application) for the manual equivalent.
+This application is a Blazor UI **and** a Web API. Both have to be running, so this step needs one
+deliberate action rather than just pressing F5.
 
-**From the command line:** open two terminals and run one in each.
+#### From Visual Studio
+
+Open `EmployeeTaskTracker.sln`, then do **one** of the following.
+
+**Either — use the bundled launch profile (quickest)**
+
+Click the dropdown next to the green ▶ button on the toolbar and choose **API + Web (both)**, then
+press **F5**.
+
+The solution includes this profile, so it is already in the list. You do still have to pick it:
+Visual Studio remembers your choice in a per-user file that is deliberately not committed, so on a
+fresh clone it defaults to a single project instead.
+
+**Or — configure it by hand (works in every Visual Studio version)**
+
+1. Right-click the **solution** at the top of Solution Explorer — the `Solution 'EmployeeTaskTracker'`
+   node, not one of the projects.
+2. Choose **Configure Startup Projects…** (older versions call it **Set Startup Projects…**).
+3. Select **Multiple startup projects** and set the Action column to:
+
+   | Project | Action |
+   |---|---|
+   | `EmployeeTaskTracker.Api` | **Start** |
+   | `EmployeeTaskTracker.Web` | **Start** |
+   | `EmployeeTaskTracker.Shared` | **None** |
+
+4. Click **OK**, then press **F5**.
+
+This choice is remembered, so it is a one-time step.
+
+> `EmployeeTaskTracker.Shared` is a class library holding the types the other two projects share. It
+> compiles to a `.dll` and cannot be started. Selecting it produces *"A project with an Output Type
+> of Class Library cannot be started directly."*
+
+**How to tell it worked:** two browser tabs open, or one tab plus a console window. The UI is at
+<http://localhost:5250> and shows the sign-in page. If you only get Swagger at
+<http://localhost:5080/swagger>, only the API started — go back and set both projects to **Start**.
+
+#### From the command line
+
+Open two terminals and run one in each.
 
 ```bash
 dotnet run --project src/EmployeeTaskTracker.Api
@@ -294,21 +332,27 @@ Both projects must be running: the Blazor frontend calls the Web API over HTTP.
 
 ### From Visual Studio
 
-1. Open `EmployeeTaskTracker.sln`.
-2. In the startup-project dropdown on the toolbar, choose **API + Web (both)**.
-3. Press F5. Both projects start together and the browser opens on the UI.
+Two equivalent routes. [Step 6](#step-6--run-both-projects) of the guide above walks through both in
+full detail; this is the summary.
 
-The solution ships with a `.slnLaunch` profile that starts the API and the Blazor app together, so
-no manual setup is needed.
+**The bundled launch profile.** Open `EmployeeTaskTracker.sln`, pick **API + Web (both)** from the
+dropdown beside the green ▶ button, and press F5. The profile is committed as `.slnLaunch`, so it is
+always in the list — but it is not selected for you. Visual Studio keeps the current startup
+selection in a per-user `.suo` file, which is not committed, so a fresh clone falls back to a single
+project until you choose.
 
-> If the dropdown is not showing that profile, your Visual Studio version may predate multi-project
-> launch profiles. Configure it by hand instead: right-click the **solution** → **Configure Startup
-> Projects** → **Multiple startup projects** → set `EmployeeTaskTracker.Api` and
-> `EmployeeTaskTracker.Web` to **Start**, and leave `EmployeeTaskTracker.Shared` on **None**.
->
+**Configuring it by hand.** Right-click the **solution** node → **Configure Startup Projects** →
+**Multiple startup projects** → set `EmployeeTaskTracker.Api` and `EmployeeTaskTracker.Web` to
+**Start**, and leave `EmployeeTaskTracker.Shared` on **None**. Visual Studio remembers this, so it is
+a one-time step.
+
 > `EmployeeTaskTracker.Shared` is a class library and cannot be started on its own — selecting it as
 > the startup project produces *"A project with an Output Type of Class Library cannot be started
 > directly."*
+
+If only one project starts you will land on Swagger at <http://localhost:5080/swagger> with no UI, or
+on a UI that reports *"Could not reach the Employee Task Tracker API"*. Either way, the fix is to set
+both projects to **Start**.
 
 ### From the command line
 
