@@ -264,35 +264,63 @@
     // Guards the debounced search so only the most recent keystroke queries.
     private CancellationTokenSource? _searchDebounce;
 
+    // The query string the filter currently reflects, so a re-render caused by
+    // something other than navigation does not reset the user's own choices.
+    private string? _appliedQueryKey;
+
     protected override async Task OnAuthenticatedAsync()
     {
-        ApplyQueryStringFilters();
+        if (!IsAdmin)
+            return;
 
-        if (IsAdmin)
+        try
         {
-            try
-            {
-                _employees = await Api.GetEmployeesAsync();
-            }
-            catch (ApiException ex)
-            {
-                // Not fatal - the list still loads, only the assignee dropdown
-                // would be empty.
-                _errorMessage = $"Could not load the employee list: {ex.Message}";
-            }
+            _employees = await Api.GetEmployeesAsync();
         }
+        catch (ApiException ex)
+        {
+            // Not fatal - the task list still loads, only the assignee dropdown
+            // would be empty.
+            _errorMessage = $"Could not load the employee list: {ex.Message}";
+        }
+    }
+
+    /// <summary>
+    /// Loading the tasks happens here rather than in OnAuthenticatedAsync
+    /// because Blazor reuses this component when only the query string changes.
+    /// Following /tasks?priority=High and then /tasks would otherwise leave the
+    /// previous filter applied, since OnInitialized does not run a second time.
+    /// </summary>
+    protected override async Task OnParametersSetAsync()
+    {
+        if (!IsAuthenticated)
+            return;
+
+        var queryKey = $"{StatusQuery}|{PriorityQuery}|{SearchQuery}";
+        if (queryKey == _appliedQueryKey)
+            return;
+
+        _appliedQueryKey = queryKey;
+        ApplyQueryStringFilters();
 
         await LoadTasksAsync();
     }
 
     /// <summary>
-    /// Seeds the filter from the query string so a dashboard card can deep-link
-    /// into a filtered view. Unrecognised values are ignored rather than passed
-    /// through, so a hand-edited URL cannot put the page into a state the API
-    /// will reject.
+    /// Replaces the filter with whatever the query string asks for, so a
+    /// dashboard card or a sidebar view can deep-link into a filtered list.
+    /// Everything is cleared first, otherwise navigating from a filtered URL to
+    /// an unfiltered one would leave the old filter in place.
+    ///
+    /// Unrecognised values are ignored rather than passed through, so a
+    /// hand-edited URL cannot put the page into a state the API will reject.
     /// </summary>
     private void ApplyQueryStringFilters()
     {
+        _filter.Search = null;
+        _filter.Status = null;
+        _filter.Priority = null;
+
         if (!string.IsNullOrWhiteSpace(StatusQuery)
             && TaskStatuses.All.Contains(StatusQuery, StringComparer.OrdinalIgnoreCase))
         {
