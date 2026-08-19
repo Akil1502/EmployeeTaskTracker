@@ -11,6 +11,18 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EmployeeTaskTracker.Api", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EmployeeTaskTracker.Web", "src\EmployeeTaskTracker.Web\EmployeeTaskTracker.Web.csproj", "{F805BABE-30A0-48A6-908B-BBE51173E7C0}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "database", "database", "{A1B2C3D4-0001-4E5F-9A8B-000000000001}"
+	ProjectSection(SolutionItems) = preProject
+		database\setup.sql = database\setup.sql
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{A1B2C3D4-0002-4E5F-9A8B-000000000002}"
+	ProjectSection(SolutionItems) = preProject
+		README.md = README.md
+		.gitignore = .gitignore
+		.slnLaunch = .slnLaunch
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
