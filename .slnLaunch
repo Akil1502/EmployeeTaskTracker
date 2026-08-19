@@ -1,0 +1,17 @@
+[
+  {
+    "Name": "API + Web (both)",
+    "Projects": [
+      {
+        "Path": "src\\EmployeeTaskTracker.Api\\EmployeeTaskTracker.Api.csproj",
+        "Action": "Start",
+        "DebugTarget": "http"
+      },
+      {
+        "Path": "src\\EmployeeTaskTracker.Web\\EmployeeTaskTracker.Web.csproj",
+        "Action": "Start",
+        "DebugTarget": "http"
+      }
+    ]
+  }
+]

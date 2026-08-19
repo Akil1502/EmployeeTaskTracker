@@ -88,9 +88,20 @@ Both projects must be running: the Blazor frontend calls the Web API over HTTP.
 ### From Visual Studio
 
 1. Open `EmployeeTaskTracker.sln`.
-2. Right-click the solution → **Configure Startup Projects** → **Multiple startup projects**.
-3. Set both `EmployeeTaskTracker.Api` and `EmployeeTaskTracker.Web` to **Start**.
-4. Press F5.
+2. In the startup-project dropdown on the toolbar, choose **API + Web (both)**.
+3. Press F5. Both projects start together and the browser opens on the UI.
+
+The solution ships with a `.slnLaunch` profile that starts the API and the Blazor app together, so
+no manual setup is needed.
+
+> If the dropdown is not showing that profile, your Visual Studio version may predate multi-project
+> launch profiles. Configure it by hand instead: right-click the **solution** → **Configure Startup
+> Projects** → **Multiple startup projects** → set `EmployeeTaskTracker.Api` and
+> `EmployeeTaskTracker.Web` to **Start**, and leave `EmployeeTaskTracker.Shared` on **None**.
+>
+> `EmployeeTaskTracker.Shared` is a class library and cannot be started on its own — selecting it as
+> the startup project produces *"A project with an Output Type of Class Library cannot be started
+> directly."*
 
 ### From the command line
 
