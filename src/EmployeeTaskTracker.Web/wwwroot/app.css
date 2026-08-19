@@ -82,6 +82,15 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
     color: var(--ink-900);
 }
 
+/* Blazor's <FocusOnNavigate> moves focus to the page heading after every
+   navigation so a screen reader announces it. That gives the heading a
+   tabindex of -1, and the browser then paints its focus ring around it.
+   :focus-visible only matches genuine keyboard focus, so excluding it hides
+   the ring after programmatic focus while keeping it for anyone tabbing. */
+[tabindex="-1"]:focus:not(:focus-visible) {
+    outline: none;
+}
+
 a {
     color: var(--accent);
     text-underline-offset: 2px;
@@ -808,8 +817,11 @@ a:hover {
     margin-top: .4rem;
 }
 
+/* These deliberately match the pill colours used in the task tables, so a
+   status reads the same whether it appears as a card or as a row badge. */
 .stat-total .stat-dot { background: var(--ink-600); }
-.stat-pending .stat-dot { background: var(--warn); }
+.stat-pending .stat-dot { background: var(--ink-400); }
+.stat-progress .stat-dot { background: var(--warn); }
 .stat-done .stat-dot { background: var(--ok); }
 .stat-high .stat-dot { background: var(--danger); }
 

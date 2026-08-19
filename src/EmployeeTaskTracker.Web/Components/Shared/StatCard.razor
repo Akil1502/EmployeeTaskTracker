@@ -24,7 +24,10 @@ else
     [Parameter, EditorRequired] public string Label { get; set; } = string.Empty;
     [Parameter, EditorRequired] public int Value { get; set; }
 
-    /// <summary>One of total, pending, done or high - drives the accent dot.</summary>
+    /// <summary>
+    /// One of total, pending, progress, done or high. Drives the accent dot,
+    /// which matches the pill colour the same status uses in the task tables.
+    /// </summary>
     [Parameter] public string Variant { get; set; } = "total";
 
     /// <summary>Optional supporting line under the number.</summary>
