@@ -3,6 +3,7 @@
 @inject TaskApiClient Api
 @inject TokenStore TokenStore
 @inject NavigationManager Navigation
+@inject IWebHostEnvironment HostEnvironment
 
 <PageTitle>Sign in - Employee Task Tracker</PageTitle>
 
@@ -88,21 +89,28 @@
                 </button>
             </EditForm>
 
-            <div class="login-demo">
-                <div class="eyebrow mb-2">Demo accounts</div>
-                <div class="d-grid gap-2">
-                    <button type="button" class="demo-chip"
-                            @onclick='() => UseDemo("admin@tasktracker.com")' disabled="@_isBusy">
-                        <span>admin@tasktracker.com</span>
-                        <span class="role">Admin</span>
-                    </button>
-                    <button type="button" class="demo-chip"
-                            @onclick='() => UseDemo("arun@tasktracker.com")' disabled="@_isBusy">
-                        <span>arun@tasktracker.com</span>
-                        <span class="role">Employee</span>
-                    </button>
+            @* Convenience shortcuts for reviewing the application locally. They
+               are rendered only in the Development environment: a deployed or
+               Release build shows a clean sign-in page with no credentials on
+               it. Every demo account is documented in the README instead. *@
+            @if (HostEnvironment.IsDevelopment())
+            {
+                <div class="login-demo">
+                    <div class="eyebrow mb-2">Demo accounts &mdash; development only</div>
+                    <div class="d-grid gap-2">
+                        <button type="button" class="demo-chip"
+                                @onclick='() => UseDemo("admin@tasktracker.com")' disabled="@_isBusy">
+                            <span>admin@tasktracker.com</span>
+                            <span class="role">Admin</span>
+                        </button>
+                        <button type="button" class="demo-chip"
+                                @onclick='() => UseDemo("arun@tasktracker.com")' disabled="@_isBusy">
+                            <span>arun@tasktracker.com</span>
+                            <span class="role">Employee</span>
+                        </button>
+                    </div>
                 </div>
-            </div>
+            }
         </div>
     </main>
 </div>

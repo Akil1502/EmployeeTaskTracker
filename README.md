@@ -183,12 +183,22 @@ Then browse to <http://localhost:5250>.
 
 ### Step 7 — Sign in
 
-| Email | Password | Role |
-|---|---|---|
-| `admin@tasktracker.com` | `Password@123` | Admin |
-| `arun@tasktracker.com` | `Password@123` | Employee |
+Every seeded account uses the password **`Password@123`**.
 
-The login page has buttons that fill either account in for you.
+| Email | Role | On the login page? |
+|---|---|---|
+| `admin@tasktracker.com` | Admin | Shortcut button |
+| `arun@tasktracker.com` | Employee | Shortcut button |
+| `divya@tasktracker.com` | Employee | Type it in |
+| `karthik@tasktracker.com` | Employee | Type it in |
+
+Running locally, the login page shows two shortcut buttons that fill the first two accounts in for
+you. **Those buttons only appear in the Development environment** — a deployed or Release build
+renders a clean sign-in page with no credentials on it, so the shortcuts never reach a real
+deployment. All four accounts work regardless; the other two are typed in by hand.
+
+Divya and Karthik are useful for seeing the same data from a different employee's perspective, since
+each one only ever sees the tasks assigned to them.
 
 ### Step 8 — Worth trying
 
@@ -379,15 +389,23 @@ If you change the API's port, update `ApiBaseUrl` in
 
 ## Demo accounts
 
-All seeded accounts use the password **`Password@123`**. The login page has buttons that fill these
-in for you.
+All four seeded accounts use the password **`Password@123`**.
 
-| Email | Role | Sees |
-|---|---|---|
-| `admin@tasktracker.com` | Admin | Every task, full create/edit/delete, org-wide dashboard |
-| `arun@tasktracker.com` | Employee | Only their own tasks, status updates only |
-| `divya@tasktracker.com` | Employee | Only their own tasks, status updates only |
-| `karthik@tasktracker.com` | Employee | Only their own tasks, status updates only |
+| Email | Role | Sees | Login page |
+|---|---|---|---|
+| `admin@tasktracker.com` | Admin | Every task, full create/edit/delete, org-wide dashboard | Shortcut button |
+| `arun@tasktracker.com` | Employee | Only their own tasks, status updates only | Shortcut button |
+| `divya@tasktracker.com` | Employee | Only their own tasks, status updates only | Type it in |
+| `karthik@tasktracker.com` | Employee | Only their own tasks, status updates only | Type it in |
+
+**The two shortcut buttons render only in the Development environment.** Running locally with F5 or
+`dotnet run` puts the application in Development, so they are there while you review it. A deployed
+or Release build shows a plain sign-in form with no credentials on the page — the convenience never
+follows the application into a real environment. All four accounts work either way; the other two
+are typed in by hand.
+
+Before deploying anywhere real, remove the seeded accounts entirely — see [Security
+notes](#security-notes).
 
 Passwords are stored as PBKDF2-SHA256 hashes (100,000 iterations, per-user random salt). The plain
 password is never stored anywhere.
