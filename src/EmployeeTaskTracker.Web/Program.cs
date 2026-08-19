@@ -49,7 +49,11 @@ if (!app.Environment.IsDevelopment())
     app.UseHttpsRedirection();
 }
 
-app.UseStatusCodePagesWithReExecute("/not-found", createScopeForStatusCodePages: true);
+// A URL matching no endpoint 404s in ASP.NET routing before the Blazor Router
+// ever sees it, so the request is re-executed into the /not-found page to give
+// the visitor something better than an empty response.
+app.UseStatusCodePagesWithReExecute("/not-found");
+
 app.UseAntiforgery();
 
 app.MapStaticAssets();

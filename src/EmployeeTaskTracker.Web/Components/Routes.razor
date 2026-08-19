@@ -2,7 +2,15 @@
    visitor to the login page, and the page they wanted is remembered so they
    land back on it after signing in. *@
 
-<Router AppAssembly="typeof(Program).Assembly" NotFoundPage="typeof(Pages.NotFound)">
+<Router AppAssembly="typeof(Program).Assembly">
+    @* Covers a client-side navigation that matches no route. A URL that matches
+       no endpoint at all never reaches here - see UseStatusCodePagesWithReExecute
+       in Program.cs. *@
+    <NotFound>
+        <LayoutView Layout="typeof(Layout.MainLayout)">
+            <NotFound />
+        </LayoutView>
+    </NotFound>
     <Found Context="routeData">
         <AuthorizeRouteView RouteData="routeData" DefaultLayout="typeof(Layout.MainLayout)">
             <NotAuthorized>

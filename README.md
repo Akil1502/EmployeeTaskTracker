@@ -15,8 +15,8 @@ can update their status.
 
 | Layer | Choice |
 |---|---|
-| Frontend | **Blazor Server** (.NET 10) |
-| Backend | **ASP.NET Core Web API** (.NET 10) |
+| Frontend | **Blazor Server** (.NET 9) |
+| Backend | **ASP.NET Core Web API** (.NET 9) |
 | Database | **SQL Server** |
 | Data access | **Stored procedures** via ADO.NET (`Microsoft.Data.SqlClient`) |
 | Authentication | **JWT bearer tokens**, PBKDF2-SHA256 password hashing, role-based authorization |
@@ -51,9 +51,14 @@ EmployeeTaskTracker.sln
 
 ## Prerequisites
 
-- [.NET 10 SDK](https://dotnet.microsoft.com/download)
+- [.NET 9 SDK](https://dotnet.microsoft.com/download/dotnet/9.0)
 - SQL Server (Express is fine) and SQL Server Management Studio
-- Visual Studio 2022 or later, or any editor — the solution also builds from the command line
+- Visual Studio 2022 (17.12 or later) or Visual Studio 2026 — or no IDE at all, since the solution
+  builds and runs from the command line
+
+> .NET 9 was chosen over .NET 10 deliberately: .NET 10 projects cannot be opened in Visual Studio
+> 2022 at all, and the specification permits either. Targeting .NET 9 means the solution opens in
+> both Visual Studio 2022 and 2026.
 
 ---
 
@@ -196,7 +201,7 @@ and remove the seeded demo accounts.
 | Specification requirement | Where it is implemented |
 |---|---|
 | Blazor Server frontend | `src/EmployeeTaskTracker.Web` |
-| ASP.NET Core Web API backend (.NET 9/10) | `src/EmployeeTaskTracker.Api`, targeting .NET 10 |
+| ASP.NET Core Web API backend (.NET 9/10) | `src/EmployeeTaskTracker.Api`, targeting .NET 9 |
 | SQL Server database | `database/setup.sql` |
 | Data access via stored procedures | `Data/UserRepository.cs`, `Data/TaskRepository.cs` |
 | User login / logout | `Components/Pages/Login.razor`, `AuthController` |

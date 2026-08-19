@@ -10,7 +10,6 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <base href="/" />
-    <ResourcePreloader />
     <link rel="stylesheet" href="@Assets["lib/bootstrap/dist/css/bootstrap.min.css"]" />
     <link rel="stylesheet" href="@Assets["app.css"]" />
     <link rel="stylesheet" href="@Assets["EmployeeTaskTracker.Web.styles.css"]" />
@@ -21,7 +20,14 @@
 
 <body>
     <Routes @rendermode="RenderModeNoPrerender" />
-    <ReconnectModal />
+
+    @* Shown by the Blazor runtime if the SignalR circuit drops. *@
+    <div id="blazor-error-ui" data-nosnippet>
+        An unhandled error has occurred.
+        <a href="." class="reload">Reload</a>
+        <span class="dismiss">&times;</span>
+    </div>
+
     <script src="@Assets["_framework/blazor.web.js"]"></script>
 </body>
 
