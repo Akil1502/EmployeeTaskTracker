@@ -86,9 +86,16 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
 /* Blazor's <FocusOnNavigate> moves focus to the page heading after every
    navigation so a screen reader announces it. That gives the heading a
    tabindex of -1, and the browser then paints its focus ring around it.
-   :focus-visible only matches genuine keyboard focus, so excluding it hides
-   the ring after programmatic focus while keeping it for anyone tabbing. */
-[tabindex="-1"]:focus:not(:focus-visible) {
+
+   A tabindex of -1 takes an element out of the tab order entirely, so nobody
+   can reach these headings by tabbing - only script focuses them. Suppressing
+   the ring therefore costs a keyboard user nothing, and every genuinely
+   focusable control keeps its own ring.
+
+   Note this cannot be done with :focus-visible: that matches on the browser's
+   last-input heuristic, so launching the app or pressing F5 counts as keyboard
+   input and the ring appears anyway. */
+[tabindex="-1"]:focus {
     outline: none;
 }
 
@@ -487,12 +494,13 @@ a:hover {
 
 .app-topbar {
     height: var(--topbar-height);
-    background: rgba(251, 250, 248, .88);
-    backdrop-filter: saturate(180%) blur(8px);
+    background: rgba(251, 250, 248, .82);
+    backdrop-filter: saturate(180%) blur(10px);
     border-bottom: 1px solid var(--line);
     display: flex;
     align-items: center;
-    padding: 0 1.5rem;
+    gap: 1rem;
+    padding: 0 1.25rem;
     position: sticky;
     top: 0;
     z-index: 1020;
@@ -782,6 +790,174 @@ a:hover {
     font-size: .87rem;
     font-weight: 600;
     line-height: 1.15;
+    display: block;
+}
+
+/* Top bar search: jumps to the filtered task list on Enter. */
+
+.topbar-search {
+    position: relative;
+    display: flex;
+    align-items: center;
+    margin: 0 auto;
+    width: min(26rem, 100%);
+}
+
+.topbar-search-icon {
+    position: absolute;
+    left: .7rem;
+    color: var(--ink-400);
+    pointer-events: none;
+}
+
+.topbar-search-input {
+    width: 100%;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    border-radius: 99px;
+    padding: .42rem 3.6rem .42rem 2.1rem;
+    font-size: .87rem;
+    color: var(--ink-900);
+    transition: border-color .14s ease, box-shadow .14s ease, background-color .14s ease;
+}
+
+.topbar-search-input::placeholder {
+    color: var(--ink-300);
+}
+
+.topbar-search-input:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+/* Hide the browser's own clear button; it clashes with the pill shape. */
+.topbar-search-input::-webkit-search-cancel-button {
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+.topbar-search-hint {
+    position: absolute;
+    right: .55rem;
+    font-size: .63rem;
+    letter-spacing: .04em;
+    color: var(--ink-400);
+    background: var(--surface-sunken);
+    border: 1px solid var(--line);
+    border-radius: 5px;
+    padding: .08rem .35rem;
+    pointer-events: none;
+}
+
+.topbar-actions {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    margin-left: auto;
+}
+
+/* Account menu */
+
+.account-menu {
+    position: relative;
+}
+
+.account-trigger {
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 99px;
+    padding: .25rem .5rem .25rem .25rem;
+    transition: background-color .14s ease, border-color .14s ease;
+}
+
+.account-trigger:hover,
+.account-trigger[aria-expanded="true"] {
+    background: var(--surface);
+    border-color: var(--line);
+}
+
+.account-trigger-text {
+    text-align: left;
+    line-height: 1.15;
+}
+
+.account-chevron {
+    color: var(--ink-400);
+}
+
+.account-sheet-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 1050;
+}
+
+.account-sheet {
+    position: absolute;
+    top: calc(100% + .5rem);
+    right: 0;
+    z-index: 1051;
+    width: 15.5rem;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    box-shadow: 0 20px 46px -18px rgba(18, 21, 26, .35);
+    padding: .85rem;
+}
+
+.account-sheet-head {
+    display: flex;
+    align-items: center;
+    gap: .7rem;
+    padding-bottom: .8rem;
+    border-bottom: 1px solid var(--line);
+}
+
+.account-sheet-id {
+    min-width: 0;
+}
+
+.account-sheet-name {
+    font-weight: 600;
+    font-size: .9rem;
+    line-height: 1.2;
+}
+
+.account-sheet-mail {
+    font-size: .76rem;
+    color: var(--ink-400);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.account-sheet-role {
+    padding: .7rem 0;
+    border-bottom: 1px solid var(--line);
+}
+
+.account-sheet-action {
+    display: flex;
+    align-items: center;
+    gap: .55rem;
+    width: 100%;
+    margin-top: .6rem;
+    padding: .5rem .6rem;
+    border: 0;
+    border-radius: var(--radius);
+    background: transparent;
+    color: var(--ink-700);
+    font-size: .88rem;
+    font-weight: 550;
+    transition: background-color .14s ease, color .14s ease;
+}
+
+.account-sheet-action:hover {
+    background: var(--danger-soft);
+    color: var(--danger);
 }
 
 @media (min-width: 992px) {
@@ -811,9 +987,6 @@ a:hover {
 
     .app-topbar {
         padding: 0 2rem;
-        background: transparent;
-        backdrop-filter: none;
-        border-bottom: 1px solid var(--line);
     }
 }
 
