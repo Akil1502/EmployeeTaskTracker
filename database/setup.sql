@@ -157,31 +157,6 @@ END
 GO
 
 -- ---------------------------------------------------------------------------
--- usp_User_GetAdmins
--- Recipients for the status-change notification. Returns every active Admin
--- rather than assuming a single one, so adding a second administrator needs no
--- code change.
--- ---------------------------------------------------------------------------
-IF OBJECT_ID('dbo.usp_User_GetAdmins', 'P') IS NOT NULL
-    DROP PROCEDURE dbo.usp_User_GetAdmins;
-GO
-CREATE PROCEDURE dbo.usp_User_GetAdmins
-AS
-BEGIN
-    SET NOCOUNT ON;
-
-    SELECT  u.UserId,
-            u.Name,
-            u.Email,
-            u.Role
-    FROM    dbo.Users AS u
-    WHERE   u.Role = 'Admin'
-      AND   u.IsActive = 1
-    ORDER BY u.Name;
-END
-GO
-
--- ---------------------------------------------------------------------------
 -- usp_User_GetById
 -- ---------------------------------------------------------------------------
 IF OBJECT_ID('dbo.usp_User_GetById', 'P') IS NOT NULL

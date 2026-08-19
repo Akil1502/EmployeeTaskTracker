@@ -85,3 +85,7 @@ $RECYCLE.BIN/
 .DS_Store
 *.swp
 *~
+
+# Local configuration overrides, for anything that must not be committed.
+appsettings.Local.json
+**/appsettings.Local.json

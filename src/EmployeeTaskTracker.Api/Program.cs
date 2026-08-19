@@ -2,7 +2,6 @@ using System.Text;
 using System.Text.Json;
 using EmployeeTaskTracker.Api.Data;
 using EmployeeTaskTracker.Api.Middleware;
-using EmployeeTaskTracker.Api.Notifications;
 using EmployeeTaskTracker.Api.Security;
 using EmployeeTaskTracker.Shared;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -26,18 +25,6 @@ var jwtOptions = builder.Configuration.GetSection(JwtOptions.SectionName).Get<Jw
 builder.Services.AddSingleton<ISqlConnectionFactory, SqlConnectionFactory>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<ITaskRepository, TaskRepository>();
-
-// ---------------------------------------------------------------------------
-// Email notifications
-//
-// Sending happens on a background service fed by an in-memory queue, so a
-// request never waits on an SMTP conversation - the specification asks for API
-// responses inside two seconds, and SMTP routinely takes longer than that.
-// ---------------------------------------------------------------------------
-builder.Services.Configure<EmailOptions>(builder.Configuration.GetSection(EmailOptions.SectionName));
-builder.Services.AddSingleton<IEmailQueue, EmailQueue>();
-builder.Services.AddScoped<ITaskNotifier, TaskNotifier>();
-builder.Services.AddHostedService<EmailDispatcher>();
 
 // ---------------------------------------------------------------------------
 // Security

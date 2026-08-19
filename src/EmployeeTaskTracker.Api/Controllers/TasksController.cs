@@ -1,6 +1,4 @@
-using System.Security.Claims;
 using EmployeeTaskTracker.Api.Data;
-using EmployeeTaskTracker.Api.Notifications;
 using EmployeeTaskTracker.Shared;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -15,19 +13,13 @@ namespace EmployeeTaskTracker.Api.Controllers;
 public sealed class TasksController : ApiControllerBase
 {
     private readonly ITaskRepository _tasks;
-    private readonly ITaskNotifier _notifier;
     private readonly ILogger<TasksController> _logger;
 
-    public TasksController(ITaskRepository tasks, ITaskNotifier notifier, ILogger<TasksController> logger)
+    public TasksController(ITaskRepository tasks, ILogger<TasksController> logger)
     {
         _tasks = tasks;
-        _notifier = notifier;
         _logger = logger;
     }
-
-    /// <summary>The signed-in user's display name, used in notification copy.</summary>
-    private string CurrentUserName =>
-        User.FindFirstValue(ClaimTypes.Name) ?? "An administrator";
 
     /// <summary>
     /// Lists tasks with optional search and filters. An Admin sees every task;
@@ -96,12 +88,6 @@ public sealed class TasksController : ApiControllerBase
         _logger.LogInformation("Task {TaskId} created by user {UserId}.", newId, CurrentUserId);
 
         var created = await _tasks.GetByIdAsync(newId, cancellationToken);
-
-        // Tell the assignee. Queued rather than sent here, so the response is
-        // not waiting on an SMTP conversation.
-        if (created is not null && created.AssignedTo is not null)
-            await _notifier.NotifyAssignedAsync(created, CurrentUserName, cancellationToken);
-
         return CreatedAtAction(nameof(GetById), new { id = newId }, created);
     }
 
@@ -120,24 +106,13 @@ public sealed class TasksController : ApiControllerBase
 
         request.TaskId = id;
 
-        // Captured before the update so the assignee can be compared afterwards.
-        var before = await _tasks.GetByIdAsync(id, cancellationToken);
-
         var updated = await _tasks.UpdateAsync(request, cancellationToken);
         if (!updated)
             return NotFound(new ApiError { Message = $"Task {id} was not found." });
 
         _logger.LogInformation("Task {TaskId} updated by user {UserId}.", id, CurrentUserId);
 
-        var after = await _tasks.GetByIdAsync(id, cancellationToken);
-
-        // Only notify when the task actually changed hands. Editing a title or a
-        // due date should not send the same person a fresh "assigned to you"
-        // email about work they already have.
-        if (after?.AssignedTo is not null && after.AssignedTo != before?.AssignedTo)
-            await _notifier.NotifyAssignedAsync(after, CurrentUserName, cancellationToken);
-
-        return Ok(after);
+        return Ok(await _tasks.GetByIdAsync(id, cancellationToken));
     }
 
     /// <summary>
@@ -155,10 +130,6 @@ public sealed class TasksController : ApiControllerBase
         if (!IsValidStatus(request.Status))
             return BadRequest(new ApiError { Message = $"Unknown status '{request.Status}'." });
 
-        // Read first so the previous status can be named in the notification,
-        // and so a no-op change can be spotted.
-        var before = await _tasks.GetByIdAsync(id, cancellationToken);
-
         var updated = await _tasks.UpdateStatusAsync(id, request.Status, AssigneeScope, cancellationToken);
         if (!updated)
         {
@@ -169,16 +140,6 @@ public sealed class TasksController : ApiControllerBase
         }
 
         _logger.LogInformation("Task {TaskId} moved to {Status} by user {UserId}.", id, request.Status, CurrentUserId);
-
-        // Tell the administrators. Skipped when the status did not actually
-        // change, so re-selecting the current value sends nothing.
-        if (before is not null && before.Status != request.Status)
-        {
-            var after = await _tasks.GetByIdAsync(id, cancellationToken);
-            if (after is not null)
-                await _notifier.NotifyStatusChangedAsync(after, before.Status, CurrentUserName, cancellationToken);
-        }
-
         return NoContent();
     }
 
